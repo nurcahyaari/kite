@@ -1,0 +1,21 @@
+var domain = wire.NewSet()
+
+// Wiring for http protocol
+var httpHandler = wire.NewSet(
+    httphandler.NewHttpHandler,
+)
+
+// Wiring protocol routing
+var httpRouter = wire.NewSet(
+	httprouter.NewHttpRouter,
+)
+
+func InitHttpProtocol() *http.HttpImpl {
+	wire.Build(
+		domain,
+		httpHandler,
+		httpRouter,
+		http.NewHttp,
+	)
+	return &http.HttpImpl{}
+}

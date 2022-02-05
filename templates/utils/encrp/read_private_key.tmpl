@@ -1,0 +1,8 @@
+func ReadPrivateKeyFromEnv(rsaPrivate string) (*rsa.PrivateKey, error) {
+	data, _ := pem.Decode([]byte(rsaPrivate))
+	privateKeyImported, err := x509.ParsePKCS1PrivateKey(data.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	return privateKeyImported, nil
+}

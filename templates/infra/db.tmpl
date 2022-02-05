@@ -1,0 +1,24 @@
+
+type {{ .DBDialeg | Title }}Impl struct {
+	DB *sqlx.DB
+}
+
+// Load Mysql
+func New{{ .DBDialeg | Title }}Client() *{{ .DBDialeg | Title }}Impl {
+    log.Info().Msg("Initialize {{ .DBDialeg }} connection")
+	var err error
+
+	{{ .ConnectionTemplate }}
+
+	db, err := sqlx.Connect("{{ .DBDialeg }}", sHost)
+
+	if err != nil {
+		log.Err(err).Msgf("Error to loading {{ .DBDialeg }} DB %s", err)
+		panic(err)
+	}
+
+	log.Info().Str("Name", dbName).Msg("Success connect to {{ .DBDialeg }} DB")
+	return &{{ .DBDialeg | Title }}Impl{
+		DB: db,
+	}
+}

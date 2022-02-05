@@ -1,0 +1,45 @@
+type Config struct {
+	Application struct{
+		Port int `mapstructure:"PORT"`
+		Log struct {
+			Path string `mapstructure:"PATH"`
+		}
+		Key struct {
+			Default string `mapstructure:"DEFAULT"`
+			Rsa     struct {
+				Public  string `mapstructure:"PUBLIC"`
+				Private string `mapstructure:"PRIVATE"`
+			}
+		}
+	}
+
+	DB struct{
+		{{ .DBDialeg | Title }} struct{
+			Host string `mapstructure:"HOST"`
+			Port int `mapstructure:"PORT"`
+			Name string `mapstructure:"NAME"`
+			User string `mapstructure:"USER"`
+			Pass string `mapstructure:"PASS"`
+		}
+	}
+}
+
+var cfg Config
+var doOnce sync.Once
+
+func Get() Config {
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatalln("cannot read .env file")
+	}
+
+	doOnce.Do(func() {
+		err := viper.Unmarshal(&cfg)
+		if err != nil {
+			log.Fatalln("cannot unmarshaling config")
+		}
+	})
+
+	return cfg
+}

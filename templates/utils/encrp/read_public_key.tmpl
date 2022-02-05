@@ -1,0 +1,15 @@
+// ReadPublicKey will return public key
+func ReadPublicKeyFromEnv(rsaPublic string) (*rsa.PublicKey, error) {
+	data, _ := pem.Decode([]byte(rsaPublic))
+	publicKeyImported, err := x509.ParsePKIXPublicKey(data.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	publicKey, ok := publicKeyImported.(*rsa.PublicKey)
+
+	if !ok {
+		return nil, errors.New("cannot reflect the interface")
+	}
+
+	return publicKey, nil
+}
