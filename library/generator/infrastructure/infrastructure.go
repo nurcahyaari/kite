@@ -1,25 +1,26 @@
 package infrastructure
 
 import (
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/utils/fs"
 	"github.com/nurcahyaari/kite/utils/logger"
 )
 
 type InfrastuctureOption struct {
-	Options
+	impl.GeneratorOptions
 	DirName            string
 	DirPath            string
 	InfrastructureName string
 	InfrastructurePath string
 }
 
-func NewInfrastructure(opt InfrastuctureOption) AppGenerator {
+func NewInfrastructure(opt InfrastuctureOption) impl.AppGenerator {
 	dirName := "infrastructure"
 	dirPath := fs.ConcatDirPath(opt.ProjectPath, dirName)
 	InfrastructurePath := fs.ConcatDirPath(dirPath, opt.InfrastructureName)
 
 	return InfrastuctureOption{
-		Options:            opt.Options,
+		GeneratorOptions:   opt.GeneratorOptions,
 		DirName:            dirName,
 		DirPath:            dirPath,
 		InfrastructureName: opt.InfrastructureName,
@@ -57,7 +58,7 @@ func (o InfrastuctureOption) createInfrastructureDir() error {
 func (o InfrastuctureOption) createDB() error {
 	logger.Info("Creating database connection... ")
 	dbOption := DBOption{
-		Options:            o.Options,
+		GeneratorOptions:   o.GeneratorOptions,
 		InfrastructurePath: o.DirPath,
 	}
 	db := NewDB(dbOption)
@@ -71,7 +72,7 @@ func (o InfrastuctureOption) createDB() error {
 
 func (o InfrastuctureOption) createCached() {
 	cachedOption := CachedOption{
-		Options:            o.Options,
+		GeneratorOptions:   o.GeneratorOptions,
 		InfrastructurePath: o.DirPath,
 	}
 	db := NewCached(cachedOption)
@@ -80,7 +81,7 @@ func (o InfrastuctureOption) createCached() {
 
 func (o InfrastuctureOption) createQueue() {
 	queueOption := QueueOption{
-		Options:            o.Options,
+		GeneratorOptions:   o.GeneratorOptions,
 		InfrastructurePath: o.DirPath,
 	}
 	db := NewQueue(queueOption)

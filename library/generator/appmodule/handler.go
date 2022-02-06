@@ -2,19 +2,20 @@ package appmodule
 
 import (
 	"github.com/nurcahyaari/kite/library/generator/misc"
+	"github.com/nurcahyaari/kite/library/impl"
 )
 
 type HandlerOption struct {
-	Options
+	impl.GeneratorOptions
 	DirPath    string
 	ModuleName string
 }
 
-func NewHandler(opt HandlerOption) (AppGenerator, error) {
+func NewHandler(opt HandlerOption) (impl.AppGenerator, error) {
 	return HandlerOption{
-		Options:    opt.Options,
-		DirPath:    opt.DirPath,
-		ModuleName: opt.ModuleName,
+		GeneratorOptions: opt.GeneratorOptions,
+		DirPath:          opt.DirPath,
+		ModuleName:       opt.ModuleName,
 	}, nil
 }
 
@@ -29,11 +30,11 @@ func (o HandlerOption) Run() error {
 
 func (o HandlerOption) createHandlerPath() error {
 	protocolOption := misc.ProtocolOption{
-		Options:    o.Options,
-		DirPath:    o.DirPath,
-		IsModule:   true,
-		RouteType:  misc.Http.ToString(),
-		ModuleName: o.ModuleName,
+		GeneratorOptions: o.GeneratorOptions,
+		DirPath:          o.DirPath,
+		IsModule:         true,
+		RouteType:        misc.Http.ToString(),
+		ModuleName:       o.ModuleName,
 	}
 	protocol := misc.NewProtocols(protocolOption)
 	err := protocol.Run()

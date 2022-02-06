@@ -1,18 +1,19 @@
 package infrastructure
 
 import (
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type QueueOption struct {
-	Options
+	impl.GeneratorOptions
 	InfrastructurePath string
 	DirName            string
 	DirPath            string
 	QueueType          string
 }
 
-func NewQueue(options QueueOption) AppGenerator {
+func NewQueue(options QueueOption) impl.AppGenerator {
 	options.DirName = "queue"
 	options.DirPath = fs.ConcatDirPath(options.InfrastructurePath, options.DirName)
 

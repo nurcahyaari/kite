@@ -1,19 +1,20 @@
 package model
 
 import (
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type EntityOption struct {
-	Options
+	impl.GeneratorOptions
 	ModulesPath      string
 	ModuleEntityPath string
 }
 
-func NewEntity(opt EntityOption) (AppGenerator, error) {
+func NewEntity(opt EntityOption) (impl.AppGenerator, error) {
 	entityPath := fs.ConcatDirPath(opt.ModulesPath, "entity")
 	return &EntityOption{
-		Options:          opt.Options,
+		GeneratorOptions: opt.GeneratorOptions,
 		ModulesPath:      opt.ModulesPath,
 		ModuleEntityPath: entityPath,
 	}, nil

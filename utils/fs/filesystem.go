@@ -16,7 +16,7 @@ import (
 
 // checkTemplateLocationIsExist is a function for validate is the template location exist
 func checkTemplateLocationIsExist(templateLocation string) error {
-	return IsFileExist(templateLocation)
+	return IsFolderExist(templateLocation)
 }
 
 func ConcatDirPath(basePath, newDir string) string {
@@ -39,22 +39,20 @@ func IsFolderExist(path string) error {
 	return nil
 }
 
-func IsFileExist(filelocation string) error {
-	fileinfo, err := os.Stat(filelocation)
-	if os.IsNotExist(err) {
-		return printErr(FileNotFoundErr)
-	}
+// func IsFileExist(filelocation string) error {
+// 	fileinfo, err := os.Stat(filelocation)
+// 	if !os.IsNotExist(err) {
+// 		return printErr(FileWasCreated)
+// 	}
 
-	if fileinfo.IsDir() {
-		return printErr(FileIsNotFileButADir)
-	}
+// 	if fileinfo.IsDir() {
+// 		return printErr(FileIsNotFileButADir)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func CreateFolder(path string) error {
-	IsFileExist(path)
-
 	if err := os.MkdirAll(path, 0755); err != nil {
 		return printErr(MkdirErr)
 	}
@@ -89,9 +87,12 @@ func CreateFile(path, fileName, template string) error {
 }
 
 func CreateFileIfNotExist(path, fileName, template string) error {
-	IsFileExist(fmt.Sprintf("%s%s", path, fileName))
+	err := IsFolderExist(fmt.Sprintf("%s%s", path, fileName))
+	if err != nil {
+		return err
+	}
 
-	err := CreateFile(path, fileName, template)
+	err = CreateFile(path, fileName, template)
 	if err != nil {
 		return err
 	}
@@ -123,6 +124,7 @@ func DeleteFile(filepath string) error {
 }
 
 func GoFormat(path, goModName string) error {
+	logger.Infoln("Running go fmt")
 	cmd := exec.Command("go", "fmt", fmt.Sprintf("%s/...", goModName))
 	cmd.Dir = path
 	var out bytes.Buffer
@@ -136,6 +138,7 @@ func GoFormat(path, goModName string) error {
 }
 
 func GoModInit(projectPath, goModName string) error {
+	logger.Infoln("Running go mod init")
 	os.Chdir(projectPath)
 	cmd := exec.Command("go", "mod", "init", goModName)
 	if err := cmd.Run(); err != nil {
@@ -154,6 +157,16 @@ func GetGoModName(gomodPath string) string {
 	modName := modfile.ModulePath(goModBytes)
 
 	return modName
+}
+
+func GoGenerateRun(projectPath string) error {
+	logger.Infoln("Running go generate")
+	os.Chdir(projectPath)
+	cmd := exec.Command("go", "generate", ".")
+	if err := cmd.Run(); err != nil {
+		return printErr(GoModInitErr)
+	}
+	return nil
 }
 
 func ValidatePath(path string) string {

@@ -3,6 +3,7 @@ package misc
 import (
 	"fmt"
 
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
@@ -13,18 +14,30 @@ type WireModuleOptions struct {
 }
 
 type WireOptions struct {
-	Options
+	impl.GeneratorOptions
 	WireModuleOptions
+	IsNewModule bool
 }
 
-func NewWire(options WireOptions) AppGenerator {
-	return WireOptions{Options: options.Options, WireModuleOptions: options.WireModuleOptions}
+func NewWire(options WireOptions) impl.AppGenerator {
+	return WireOptions{
+		GeneratorOptions:  options.GeneratorOptions,
+		WireModuleOptions: options.WireModuleOptions,
+		IsNewModule:       options.IsNewModule,
+	}
 }
 
 func (o WireOptions) Run() error {
-	err := o.createWireFile()
-	if err != nil {
-		return err
+	if o.IsNewModule {
+		err := o.appendDependencyToWire()
+		if err != nil {
+			return err
+		}
+	} else {
+		err := o.createWireFile()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -68,5 +81,9 @@ func (o WireOptions) createWireFile() error {
 		return nil
 	}
 
+	return nil
+}
+
+func (o WireOptions) appendDependencyToWire() error {
 	return nil
 }

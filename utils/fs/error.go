@@ -11,6 +11,7 @@ const (
 	FileNotFoundErr      filesystemErr = "File is not found"
 	FileIsNotFileButADir filesystemErr = "File is not a file but it's a directory"
 	FileIsNotDirButAFile filesystemErr = "File is not a directory but it's a file"
+	FileWasCreated       filesystemErr = "File already created"
 	FolderWasCreated     filesystemErr = "Folder already created"
 	GoFmtErr             filesystemErr = "Failed to run go fmt"
 	GoModInitErr         filesystemErr = "Failed to go mod init"

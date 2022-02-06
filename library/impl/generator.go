@@ -1,4 +1,4 @@
-package generator
+package impl
 
 type GeneratorOptions struct {
 	AppName         string

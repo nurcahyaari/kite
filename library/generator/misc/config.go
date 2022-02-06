@@ -1,17 +1,18 @@
 package misc
 
 import (
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type ConfigOption struct {
-	Options
+	impl.GeneratorOptions
 	DirName string
 	DirPath string
 }
 
-func NewConfig(options ConfigOption) AppGenerator {
+func NewConfig(options ConfigOption) impl.AppGenerator {
 	options.DirName = "config"
 	options.DirPath = fs.ConcatDirPath(options.ProjectPath, options.DirName)
 
@@ -57,7 +58,7 @@ func (o ConfigOption) createBaseFile() error {
 			},
 		},
 		Data: map[string]interface{}{
-			"AppName":  o.Options.AppName,
+			"AppName":  o.GeneratorOptions.AppName,
 			"DBDialeg": o.DefaultDBDialeg,
 		},
 	})

@@ -75,8 +75,8 @@ func NewTemplate(
 		}
 
 		template.Import[i].FilePath = fmt.Sprintf(`"%s"`, imp.FilePath)
-
 	}
+
 	tmpl := Template{
 		PackageName:    template.PackageName,
 		Import:         template.Import,

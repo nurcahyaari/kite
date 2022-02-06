@@ -1,20 +1,21 @@
 package misc
 
 import (
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 	"github.com/nurcahyaari/kite/utils/logger"
 )
 
 type LoggerOption struct {
-	Options
+	impl.GeneratorOptions
 	InfrastructurePath string
 	DirName            string
 	DirPath            string
 	QueueType          string
 }
 
-func NewLogger(options LoggerOption) AppGenerator {
+func NewLogger(options LoggerOption) impl.AppGenerator {
 	options.DirName = "logger"
 	options.DirPath = fs.ConcatDirPath(options.InfrastructurePath, options.DirName)
 

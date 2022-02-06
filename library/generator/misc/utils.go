@@ -3,12 +3,13 @@ package misc
 import (
 	"fmt"
 
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type UtilsOption struct {
-	Options
+	impl.GeneratorOptions
 	InternalPath string
 	DirName      string
 	DirPath      string
@@ -16,7 +17,7 @@ type UtilsOption struct {
 
 func NewUtils(
 	options UtilsOption,
-) AppGenerator {
+) impl.AppGenerator {
 	options.DirName = "utils"
 	options.DirPath = fs.ConcatDirPath(options.InternalPath, options.DirName)
 

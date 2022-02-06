@@ -3,19 +3,20 @@ package misc
 import (
 	"fmt"
 
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type MiddlewareOption struct {
-	Options
+	impl.GeneratorOptions
 	InternalPath   string
 	DirName        string
 	DirPath        string
 	MiddlewareName string
 }
 
-func NewMiddleware(options MiddlewareOption) AppGenerator {
+func NewMiddleware(options MiddlewareOption) impl.AppGenerator {
 	options.DirName = "middlewares"
 	options.DirPath = fs.ConcatDirPath(options.InternalPath, options.DirName)
 

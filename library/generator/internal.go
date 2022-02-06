@@ -2,17 +2,18 @@ package generator
 
 import (
 	"github.com/nurcahyaari/kite/library/generator/misc"
+	"github.com/nurcahyaari/kite/library/impl"
 
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type InternalOption struct {
-	GeneratorOptions
+	impl.GeneratorOptions
 	DirName string
 	DirPath string
 }
 
-func NewInternal(opt InternalOption) AppGenerator {
+func NewInternal(opt InternalOption) impl.AppGenerator {
 	opt.DirName = "internal"
 	opt.DirPath = fs.ConcatDirPath(opt.ProjectPath, opt.DirName)
 
@@ -24,10 +25,10 @@ func (o InternalOption) Run() error {
 	o.createInternalDir()
 
 	protocolOption := misc.ProtocolOption{
-		Options:   o.GeneratorOptions,
-		DirPath:   o.DirPath,
-		IsModule:  false,
-		RouteType: misc.Http.ToString(),
+		GeneratorOptions: o.GeneratorOptions,
+		DirPath:          o.DirPath,
+		IsModule:         false,
+		RouteType:        misc.Http.ToString(),
 	}
 	protocol := misc.NewProtocols(protocolOption)
 	err := protocol.Run()
@@ -36,14 +37,14 @@ func (o InternalOption) Run() error {
 	}
 
 	utilOption := misc.UtilsOption{
-		Options:      o.GeneratorOptions,
-		InternalPath: o.DirPath,
+		GeneratorOptions: o.GeneratorOptions,
+		InternalPath:     o.DirPath,
 	}
 	util := misc.NewUtils(utilOption)
 	util.Run()
 
 	loggerOption := misc.LoggerOption{
-		Options:            o.GeneratorOptions,
+		GeneratorOptions:   o.GeneratorOptions,
 		InfrastructurePath: o.DirPath,
 	}
 	db := misc.NewLogger(loggerOption)

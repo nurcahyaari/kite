@@ -3,16 +3,17 @@ package generator
 import (
 	"fmt"
 
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 	"github.com/nurcahyaari/kite/utils/logger"
 )
 
 type ApplicationOption struct {
-	GeneratorOptions
+	impl.GeneratorOptions
 }
 
-func NewApplicationGenerator(options ApplicationOption) AppGenerator {
+func NewApplicationGenerator(options ApplicationOption) impl.AppGenerator {
 	return options
 }
 
@@ -29,6 +30,12 @@ func (o ApplicationOption) createMainFile() error {
 	tmpl := templates.NewTemplate(templates.Template{
 		PackageName: "main",
 		Template:    templates.MainTemplate,
+		Data: map[string]interface{}{
+			"GoGenerate": []string{
+				"//go:generate go run github.com/google/wire/cmd/wire",
+				"//go:generate go run github.com/swaggo/swag/cmd/swag init",
+			},
+		},
 		Import: []templates.ImportedPackage{
 			{
 				FilePath: fmt.Sprintf("%s/internal/logger", o.GoModName),

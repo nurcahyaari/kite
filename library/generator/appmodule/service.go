@@ -4,21 +4,22 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type ServiceOption struct {
-	Options
+	impl.GeneratorOptions
 	ModuleName        string
 	ModulePath        string
 	ModuleServicePath string
 }
 
-func NewService(opt ServiceOption) (AppGenerator, error) {
+func NewService(opt ServiceOption) (impl.AppGenerator, error) {
 	servicePath := fs.ConcatDirPath(opt.ModulePath, "service")
 	return ServiceOption{
-		Options:           opt.Options,
+		GeneratorOptions:  opt.GeneratorOptions,
 		ModuleName:        opt.ModuleName,
 		ModulePath:        opt.ModulePath,
 		ModuleServicePath: servicePath,

@@ -7,6 +7,7 @@ import (
 	appmodule "github.com/nurcahyaari/kite/library/generator/appmodule"
 	"github.com/nurcahyaari/kite/library/generator/infrastructure"
 	"github.com/nurcahyaari/kite/library/generator/misc"
+	"github.com/nurcahyaari/kite/library/impl"
 
 	"github.com/nurcahyaari/kite/utils/fs"
 	"github.com/nurcahyaari/kite/utils/logger"
@@ -14,10 +15,10 @@ import (
 )
 
 type NewAppOption struct {
-	GeneratorOptions
+	impl.GeneratorOptions
 }
 
-func NewApp(opt NewAppOption) AppGenerator {
+func NewApp(opt NewAppOption) impl.AppGenerator {
 	return NewAppOption{
 		GeneratorOptions: opt.GeneratorOptions,
 	}
@@ -40,12 +41,14 @@ func (o NewAppOption) Run() error {
 			"github.com/go-chi/chi/v5",
 			"github.com/golang-jwt/jwt",
 			"github.com/google/wire",
+			"github.com/google/wire/cmd/wire",
+			"github.com/swaggo/swag/cmd/swag",
 		},
 	}
 
 	// create .env
 	envOption := misc.ConfigureEnvOption{
-		Options: o.GeneratorOptions,
+		GeneratorOptions: o.GeneratorOptions,
 	}
 	env := misc.NewConfigureEnv(envOption)
 	env.Run()
@@ -70,7 +73,7 @@ func (o NewAppOption) Run() error {
 
 	// create config folder
 	configOption := misc.ConfigOption{
-		Options: o.GeneratorOptions,
+		GeneratorOptions: o.GeneratorOptions,
 	}
 	config := misc.NewConfig(configOption)
 	err = config.Run()
@@ -81,7 +84,7 @@ func (o NewAppOption) Run() error {
 
 	// create infrastructure folder
 	infrastructureOption := infrastructure.InfrastuctureOption{
-		Options: o.GeneratorOptions,
+		GeneratorOptions: o.GeneratorOptions,
 	}
 
 	infrastructure := infrastructure.NewInfrastructure(infrastructureOption)
@@ -104,7 +107,7 @@ func (o NewAppOption) Run() error {
 
 	// create src
 	moduleOption := appmodule.ModulesOption{
-		Options: o.GeneratorOptions,
+		GeneratorOptions: o.GeneratorOptions,
 	}
 
 	module := appmodule.NewModules(moduleOption)
@@ -121,13 +124,15 @@ func (o NewAppOption) Run() error {
 
 	// add wire
 	wireOption := misc.WireOptions{
-		Options: o.GeneratorOptions,
+		GeneratorOptions: o.GeneratorOptions,
 	}
 	wire := misc.NewWire(wireOption)
 	err = wire.Run()
 	if err != nil {
 		return errors.New("error when creating wire")
 	}
+
+	fs.GoGenerateRun(o.ProjectPath)
 
 	fs.GoFormat(o.ProjectPath, o.GoModName)
 

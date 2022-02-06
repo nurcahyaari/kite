@@ -1,19 +1,20 @@
 package model
 
 import (
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type DTOOption struct {
-	Options
+	impl.GeneratorOptions
 	ModulesPath      string
 	ModuleEntityPath string
 }
 
-func NewDTO(opt DTOOption) (AppGenerator, error) {
+func NewDTO(opt DTOOption) (impl.AppGenerator, error) {
 	entityPath := fs.ConcatDirPath(opt.ModulesPath, "dto")
 	return &DTOOption{
-		Options:          opt.Options,
+		GeneratorOptions: opt.GeneratorOptions,
 		ModulesPath:      opt.ModulesPath,
 		ModuleEntityPath: entityPath,
 	}, nil

@@ -1,17 +1,18 @@
 package misc
 
 import (
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type ConfigureEnvOption struct {
-	Options
+	impl.GeneratorOptions
 }
 
-func NewConfigureEnv(opt ConfigureEnvOption) AppGenerator {
+func NewConfigureEnv(opt ConfigureEnvOption) impl.AppGenerator {
 	return ConfigureEnvOption{
-		Options: opt.Options,
+		GeneratorOptions: opt.GeneratorOptions,
 	}
 }
 

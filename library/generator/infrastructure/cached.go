@@ -1,18 +1,19 @@
 package infrastructure
 
 import (
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type CachedOption struct {
-	Options
+	impl.GeneratorOptions
 	InfrastructurePath string
 	DirName            string
 	DirPath            string
 	DBType             string
 }
 
-func NewCached(options CachedOption) AppGenerator {
+func NewCached(options CachedOption) impl.AppGenerator {
 	options.DirName = "cached"
 	options.DirPath = fs.ConcatDirPath(options.InfrastructurePath, options.DirName)
 

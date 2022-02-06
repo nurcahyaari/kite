@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
@@ -28,7 +29,7 @@ func (r ProtocolType) ToString() string {
 }
 
 type ProtocolOption struct {
-	Options
+	impl.GeneratorOptions
 	DirPath    string
 	IsModule   bool
 	ModuleName string
@@ -36,19 +37,19 @@ type ProtocolOption struct {
 	RoutePath  string
 }
 
-func NewProtocols(opt ProtocolOption) AppGenerator {
+func NewProtocols(opt ProtocolOption) impl.AppGenerator {
 	if opt.IsModule {
 		opt.DirPath = fs.ConcatDirPath(opt.DirPath, "handlers")
 	} else {
 		opt.DirPath = fs.ConcatDirPath(opt.DirPath, "protocols")
 	}
 	return ProtocolOption{
-		Options:    opt.Options,
-		IsModule:   opt.IsModule,
-		ModuleName: opt.ModuleName,
-		DirPath:    opt.DirPath,
-		RouteType:  opt.RouteType,
-		RoutePath:  fs.ConcatDirPath(opt.DirPath, opt.RouteType),
+		GeneratorOptions: opt.GeneratorOptions,
+		IsModule:         opt.IsModule,
+		ModuleName:       opt.ModuleName,
+		DirPath:          opt.DirPath,
+		RouteType:        opt.RouteType,
+		RoutePath:        fs.ConcatDirPath(opt.DirPath, opt.RouteType),
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/nurcahyaari/kite/library/generator"
 	"github.com/nurcahyaari/kite/library/generator/appmodule"
 	"github.com/nurcahyaari/kite/library/generator/misc"
+	"github.com/nurcahyaari/kite/library/impl"
 
 	"github.com/nurcahyaari/kite/utils"
 	"github.com/nurcahyaari/kite/utils/logger"
@@ -38,7 +39,7 @@ func main() {
 				},
 			},
 			Action: func(c *cli.Context) error {
-				var option generator.GeneratorOptions
+				var option impl.GeneratorOptions
 				var newAppOption generator.NewAppOption
 
 				option.GoModName = c.String("name")
@@ -62,7 +63,7 @@ func main() {
 			},
 		},
 		{
-			Name:        "modules",
+			Name:        "module",
 			Description: "Make a new module",
 			Flags: []cli.Flag{
 				&cli.StringFlag{
@@ -73,14 +74,14 @@ func main() {
 			},
 			Action: func(c *cli.Context) error {
 				var err error
-				var option generator.GeneratorOptions
+				var option impl.GeneratorOptions
 				var moduleOption appmodule.ModulesOption
 
 				path := "/Users/nurcahyaari/Documents/projects/tools/testkite/test1/"
 				option.Path = path
 				option.ProjectPath = path
 
-				moduleOption.Options = option
+				moduleOption.GeneratorOptions = option
 				moduleOption.IsModule = true
 				moduleOption.ModuleName = c.String("name")
 				if moduleOption.ModuleName == "" {
@@ -90,9 +91,12 @@ func main() {
 				}
 
 				module := appmodule.NewModules(moduleOption)
-				module.Run()
+				err = module.Run()
+				if err != nil {
+					logger.Errorln(err)
+				}
 
-				return nil
+				return err
 			},
 		},
 		{
@@ -106,14 +110,14 @@ func main() {
 				},
 			},
 			Action: func(c *cli.Context) error {
-				var option generator.GeneratorOptions
+				var option impl.GeneratorOptions
 				var middlewareOption misc.MiddlewareOption
 				path := "/Users/nurcahyaari/Documents/projects/tools/testkite/test1/"
 
 				option.Path = path
 				option.ProjectPath = path
 
-				middlewareOption.Options = option
+				middlewareOption.GeneratorOptions = option
 				middlewareOption.MiddlewareName = c.String("name")
 				middlewareOption.InternalPath = path + "internal/"
 

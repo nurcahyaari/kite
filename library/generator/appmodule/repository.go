@@ -4,21 +4,22 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/nurcahyaari/kite/library/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type RepositoryOption struct {
-	Options
+	impl.GeneratorOptions
 	ModuleName           string
 	ModulePath           string
 	ModuleRepositoryPath string
 }
 
-func NewRepository(opt RepositoryOption) (AppGenerator, error) {
+func NewRepository(opt RepositoryOption) (impl.AppGenerator, error) {
 	repositoryPath := fs.ConcatDirPath(opt.ModulePath, "repository")
 	return RepositoryOption{
-		Options:              opt.Options,
+		GeneratorOptions:     opt.GeneratorOptions,
 		ModuleName:           opt.ModuleName,
 		ModulePath:           opt.ModulePath,
 		ModuleRepositoryPath: repositoryPath,
