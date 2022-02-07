@@ -28,4 +28,12 @@ creating new module
 main module --name <your module name>
 ```
 
-currently Kite doesn't support auto adding modules into wire.go. after adding the new modules you must manually inject your modules and any others dependencies into wire.go manually
+currently Kite doesn't support auto adding modules into wire.go. after adding the new modules you must manually inject your modules and any others dependencies into wire.go manually.
+
+after you create your new project, and your new module then you must:
+1. add your handlers into protocols/http/router/route.go
+2. add your router/route.go into protocols/http/http.go
+3. run go generate ./...
+4. if you've got an error, install the package that needed in your project
+5. copy your .env.example into .env
+6. run your project again

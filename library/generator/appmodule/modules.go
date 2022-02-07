@@ -1,6 +1,7 @@
 package appmodule
 
 import (
+	"github.com/nurcahyaari/kite/library/generator/misc"
 	"github.com/nurcahyaari/kite/library/generator/model"
 	"github.com/nurcahyaari/kite/library/impl"
 
@@ -87,6 +88,7 @@ func (o ModulesOption) createModulesDir() error {
 	o.createServiceDir()
 	o.createEntitiesDir()
 	o.createDTODir()
+	o.appendNewModuleIntoWire()
 
 	return nil
 }
@@ -150,6 +152,18 @@ func (o ModulesOption) createDTODir() error {
 	}
 	dto, _ := model.NewDTO(dtoOption)
 	dto.Run()
+
+	return nil
+}
+
+func (o ModulesOption) appendNewModuleIntoWire() error {
+
+	wireOption := misc.WireOptions{
+		GeneratorOptions: o.GeneratorOptions,
+		IsNewModule:      true,
+	}
+	wire := misc.NewWire(wireOption)
+	wire.Run()
 
 	return nil
 }

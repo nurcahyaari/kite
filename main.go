@@ -11,9 +11,12 @@ import (
 	"github.com/nurcahyaari/kite/library/impl"
 
 	"github.com/nurcahyaari/kite/utils"
+	"github.com/nurcahyaari/kite/utils/fs"
 	"github.com/nurcahyaari/kite/utils/logger"
 	cli "github.com/urfave/cli/v2"
 )
+
+// TODO: beautify the code
 
 func main() {
 	var err error
@@ -21,11 +24,11 @@ func main() {
 	app.Name = "kite"
 	app.Description = "Projects Generator for Golang inspired by Clean Code Arch"
 
-	// path, err := os.Getwd()
-	// if err != nil {
-	// 	logger.Errorln(err)
-	// 	return
-	// }
+	path, err := os.Getwd()
+	if err != nil {
+		logger.Errorln(err)
+		return
+	}
 
 	app.Commands = []*cli.Command{
 		{
@@ -43,9 +46,8 @@ func main() {
 				var newAppOption generator.NewAppOption
 
 				option.GoModName = c.String("name")
-				path := "/Users/nurcahyaari/Documents/projects/tools/testkite/"
 				option.Path = path
-				option.ProjectPath = path + option.GoModName
+				option.ProjectPath = fs.ConcatDirPath(path, option.GoModName)
 				option.DefaultDBDialeg = "mysql"
 
 				splitPath := strings.Split(option.GoModName, "/")
@@ -77,9 +79,8 @@ func main() {
 				var option impl.GeneratorOptions
 				var moduleOption appmodule.ModulesOption
 
-				path := "/Users/nurcahyaari/Documents/projects/tools/testkite/test1/"
-				option.Path = path
-				option.ProjectPath = path
+				option.Path = fmt.Sprintf("%s/", path)
+				option.ProjectPath = fmt.Sprintf("%s/", path)
 
 				moduleOption.GeneratorOptions = option
 				moduleOption.IsModule = true

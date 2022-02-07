@@ -3,15 +3,15 @@ type Config struct {
 		Port int `mapstructure:"PORT"`
 		Log struct {
 			Path string `mapstructure:"PATH"`
-		}
+		} `mapstructure:"LOG"`
 		Key struct {
 			Default string `mapstructure:"DEFAULT"`
 			Rsa     struct {
 				Public  string `mapstructure:"PUBLIC"`
 				Private string `mapstructure:"PRIVATE"`
 			}
-		}
-	}
+		} `mapstructure:"KEY"`
+	} `mapstructure:"APPLICATION"`
 
 	DB struct{
 		{{ .DBDialeg | Title }} struct{
@@ -20,8 +20,8 @@ type Config struct {
 			Name string `mapstructure:"NAME"`
 			User string `mapstructure:"USER"`
 			Pass string `mapstructure:"PASS"`
-		}
-	}
+		} `mapstructure:"{{ .DBDialeg | ToUpper }}"`
+	} `mapstructure:"DB"`
 }
 
 var cfg Config
