@@ -1,8 +1,8 @@
 package generator
 
 import (
-	"github.com/nurcahyaari/kite/library/generator/misc"
-	"github.com/nurcahyaari/kite/library/impl"
+	"github.com/nurcahyaari/kite/lib/generator/misc"
+	"github.com/nurcahyaari/kite/lib/impl"
 
 	"github.com/nurcahyaari/kite/utils/fs"
 )

@@ -1,10 +1,8 @@
 package appmodule
 
 import (
-	"github.com/nurcahyaari/kite/library/generator/misc"
-	"github.com/nurcahyaari/kite/library/generator/model"
-	"github.com/nurcahyaari/kite/library/impl"
-
+	"github.com/nurcahyaari/kite/lib/generator/misc"
+	"github.com/nurcahyaari/kite/lib/impl"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
@@ -135,22 +133,22 @@ func (o ModulesOption) createServiceDir() error {
 }
 
 func (o ModulesOption) createEntitiesDir() error {
-	entitiesOption := model.EntityOption{
+	entitiesOption := misc.EntityOption{
 		GeneratorOptions: o.GeneratorOptions,
 		ModulesPath:      o.ModulePath,
 	}
-	entity, _ := model.NewEntity(entitiesOption)
+	entity, _ := misc.NewEntity(entitiesOption)
 	entity.Run()
 
 	return nil
 }
 
 func (o ModulesOption) createDTODir() error {
-	dtoOption := model.DTOOption{
+	dtoOption := misc.DTOOption{
 		GeneratorOptions: o.GeneratorOptions,
 		ModulesPath:      o.ModulePath,
 	}
-	dto, _ := model.NewDTO(dtoOption)
+	dto, _ := misc.NewDTO(dtoOption)
 	dto.Run()
 
 	return nil

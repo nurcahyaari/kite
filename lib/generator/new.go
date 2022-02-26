@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	appmodule "github.com/nurcahyaari/kite/library/generator/appmodule"
-	"github.com/nurcahyaari/kite/library/generator/infrastructure"
-	"github.com/nurcahyaari/kite/library/generator/misc"
-	"github.com/nurcahyaari/kite/library/impl"
+	appmodule "github.com/nurcahyaari/kite/lib/generator/appmodule"
+	"github.com/nurcahyaari/kite/lib/generator/infrastructure"
+	"github.com/nurcahyaari/kite/lib/generator/misc"
+	"github.com/nurcahyaari/kite/lib/impl"
 
 	"github.com/nurcahyaari/kite/utils/fs"
 	"github.com/nurcahyaari/kite/utils/logger"

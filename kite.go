@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nurcahyaari/kite/library/generator"
-	"github.com/nurcahyaari/kite/library/generator/appmodule"
-	"github.com/nurcahyaari/kite/library/generator/misc"
-	"github.com/nurcahyaari/kite/library/impl"
+	"github.com/nurcahyaari/kite/lib/generator"
+	"github.com/nurcahyaari/kite/lib/generator/appmodule"
+	"github.com/nurcahyaari/kite/lib/generator/misc"
+	"github.com/nurcahyaari/kite/lib/impl"
 
 	"github.com/nurcahyaari/kite/utils"
 	"github.com/nurcahyaari/kite/utils/fs"

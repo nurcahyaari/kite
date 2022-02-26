@@ -3,7 +3,7 @@ package generator
 import (
 	"fmt"
 
-	"github.com/nurcahyaari/kite/library/impl"
+	"github.com/nurcahyaari/kite/lib/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 	"github.com/nurcahyaari/kite/utils/logger"
