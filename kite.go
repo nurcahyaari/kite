@@ -91,6 +91,9 @@ func main() {
 				var option impl.GeneratorOptions
 				var moduleOption appmodule.ModulesOption
 
+				if c.String("path") != "" {
+					path = c.String("path")
+				}
 				option.Path = fmt.Sprintf("%s/", path)
 				option.ProjectPath = fmt.Sprintf("%s/", path)
 

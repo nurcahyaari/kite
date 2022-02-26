@@ -1,6 +1,8 @@
 package appmodule
 
 import (
+	"errors"
+
 	"github.com/nurcahyaari/kite/lib/generator/misc"
 	"github.com/nurcahyaari/kite/lib/impl"
 	"github.com/nurcahyaari/kite/utils/fs"
@@ -77,6 +79,12 @@ func (o ModulesOption) createSrcDir() error {
 }
 
 func (o ModulesOption) createModulesDir() error {
+	// validate is project exist
+	if err := fs.IsFolderExist(o.ProjectPath); err == nil {
+		return errors.New("project path is not exist")
+	}
+
+	// validate is foder exist
 	if err := fs.IsFolderExist(o.ModulePath); err != nil {
 		return err
 	}

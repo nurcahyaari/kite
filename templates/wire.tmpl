@@ -11,6 +11,10 @@ var domain = wire.NewSet(
 // Wiring for http protocol
 var httpHandler = wire.NewSet(
     httphandler.NewHttpHandler,
+	wire.Bind(
+		new(httphandler.HttpHandler),
+		new(*httphandler.HttpHandlerImpl),
+	),
 )
 
 // Wiring protocol routing

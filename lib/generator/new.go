@@ -53,6 +53,13 @@ func (o NewAppOption) Run() error {
 	env := misc.NewConfigureEnv(envOption)
 	env.Run()
 
+	// create .gitignore
+	gitignoreOption := misc.GitignoreOptions{
+		GeneratorOptions: o.GeneratorOptions,
+	}
+	gitignore := misc.NewGitignore(gitignoreOption)
+	gitignore.Run()
+
 	// create go mod
 	err = fs.GoModInit(o.ProjectPath, o.GoModName)
 	if err != nil {

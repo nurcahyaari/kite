@@ -22,6 +22,9 @@ var EnvTemplate TemplateBody
 //go:embed wire.tmpl
 var WireTemplate TemplateBody
 
+//go:embed gitignore.tmpl
+var GitignoreTemplate TemplateBody
+
 // Infra
 
 var (
