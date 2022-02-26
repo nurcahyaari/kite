@@ -7,7 +7,6 @@ import (
 
 	"github.com/nurcahyaari/kite/lib/generator"
 	"github.com/nurcahyaari/kite/lib/generator/appmodule"
-	"github.com/nurcahyaari/kite/lib/generator/misc"
 	"github.com/nurcahyaari/kite/lib/impl"
 
 	"github.com/nurcahyaari/kite/utils"
@@ -40,12 +39,20 @@ func main() {
 					Value: "kite",
 					Usage: "creating new Apps with name",
 				},
+				&cli.StringFlag{
+					Name:  "path",
+					Value: "",
+					Usage: "Path of projects",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				var option impl.GeneratorOptions
 				var newAppOption generator.NewAppOption
 
 				option.GoModName = c.String("name")
+				if c.String("path") != "" {
+					path = c.String("path")
+				}
 				option.Path = path
 				option.ProjectPath = fs.ConcatDirPath(path, option.GoModName)
 				option.DefaultDBDialeg = "mysql"
@@ -73,6 +80,11 @@ func main() {
 					Value: "",
 					Usage: "module name",
 				},
+				&cli.StringFlag{
+					Name:  "path",
+					Value: "",
+					Usage: "Path of projects",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				var err error
@@ -98,34 +110,6 @@ func main() {
 				}
 
 				return err
-			},
-		},
-		{
-			Name:        "middleware",
-			Description: "Make a new middleware",
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:  "name",
-					Value: "",
-					Usage: "middleware name",
-				},
-			},
-			Action: func(c *cli.Context) error {
-				var option impl.GeneratorOptions
-				var middlewareOption misc.MiddlewareOption
-				path := "/Users/nurcahyaari/Documents/projects/tools/testkite/test1/"
-
-				option.Path = path
-				option.ProjectPath = path
-
-				middlewareOption.GeneratorOptions = option
-				middlewareOption.MiddlewareName = c.String("name")
-				middlewareOption.InternalPath = path + "internal/"
-
-				middleware := misc.NewMiddleware(middlewareOption)
-				middleware.Run()
-
-				return nil
 			},
 		},
 	}
