@@ -11,7 +11,7 @@ git clone https://github.com/nurcahyaari/Kite.git
 
 then open the directory in your terminal app.
 ```bash
-go build main.go
+go build kite.go
 ```
 The app was built as binary. then move the binary app into your $PATH environment
 
