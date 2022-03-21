@@ -11,7 +11,7 @@ func TestConcatDirPath(t *testing.T) {
 	t.Run("WithBackslash", func(t *testing.T) {
 		appName := fs.ConcatDirPath("github.com/nurcahyaari/library", "routes")
 
-		assert.Equal(t, appName, "github.com/nurcahyaari/lib/routes")
+		assert.Equal(t, appName, "github.com/nurcahyaari/library/routes")
 	})
 
 	t.Run("WithouteBackslash", func(t *testing.T) {
