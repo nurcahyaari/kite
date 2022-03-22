@@ -29,6 +29,7 @@ type AbstractCode interface {
 	AddFunctionCaller(funcName string, callerSpec CallerSpec)
 	AddArgsToCallExpr(callerSpec CallerSpec)
 	AddFunctionArgsToReturn(functionReturnArgs FunctionReturnArgsSpec)
+	AddCommentOutsideFunction(commentSpec Comment)
 	RebuildCode() error
 }
 
@@ -750,6 +751,41 @@ func (a *AbstractCodeImpl) AddFunctionArgsToReturn(functionReturnArgs FunctionRe
 			}
 		}
 	}
+}
+
+func (a *AbstractCodeImpl) AddCommentOutsideFunction(commentSpec Comment) {
+	ast.Inspect(a.file, func(n ast.Node) bool {
+		if commentSpec.FunctionName != "" {
+			// search function by name
+			funcdecl, ok := n.(*ast.FuncDecl)
+			if ok {
+				if funcdecl.Name.Name == commentSpec.FunctionName {
+					funcdecl.Doc = &ast.CommentGroup{
+						List: []*ast.Comment{
+							{
+								Text:  commentSpec.Value,
+								Slash: funcdecl.Pos() - 1,
+							},
+						},
+					}
+				}
+			}
+		} else {
+			// add comment after import
+			astfile, ok := n.(*ast.File)
+			if ok {
+				astfile.Comments = append(astfile.Comments, &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: commentSpec.Value,
+						},
+					},
+				})
+			}
+		}
+
+		return true
+	})
 }
 
 func (a *AbstractCodeImpl) RebuildCode() error {

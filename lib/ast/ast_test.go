@@ -2348,3 +2348,60 @@ func InitHttpProtocol() *http.HttpImpl {
 		assert.Equal(t, exp, act)
 	})
 }
+
+func TestAddCommentBeforeFunction(t *testing.T) {
+	t.Run("Test add comment before function 1", func(t *testing.T) {
+		code := `
+		package test
+
+		func main() {}
+		`
+
+		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
+		abstractCode.AddCommentOutsideFunction(libast.Comment{
+			Value: "//go:generate go run github.com/google/wire/cmd/wire",
+		})
+		err := abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act := abstractCode.GetCode()
+
+		// don't touch the expected code please
+		// expect you change the test case please :D
+		// building this string obviously difficult
+		exp := `//go:generate go run github.com/google/wire/cmd/wire
+package test
+
+func main()	{}
+`
+		fmt.Println(act)
+		assert.Equal(t, exp, act)
+	})
+
+	t.Run("Test add comment before function 2", func(t *testing.T) {
+		code := `
+		package test
+
+		func main() {}
+		`
+
+		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
+		abstractCode.AddCommentOutsideFunction(libast.Comment{
+			FunctionName: "main",
+			Value:        "// Main function",
+		})
+		err := abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act := abstractCode.GetCode()
+
+		// don't touch the expected code please
+		// expect you change the test case please :D
+		// building this string obviously difficult
+		exp := `package test
+
+// Main function
+func main()	{}
+`
+		fmt.Println(act)
+		assert.Equal(t, exp, act)
+	})
+}
