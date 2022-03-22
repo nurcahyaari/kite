@@ -527,7 +527,6 @@ func (a *AbstractCodeImpl) AddFunctionArgs(functionSpec FunctionSpec) {
 	}
 }
 
-// deprecated function, should make the function more globaly
 // AddWireDependencyInjection
 // add this thing like this
 // var productRepo = wire.NewSet(
@@ -543,54 +542,90 @@ func (a *AbstractCodeImpl) AddFunctionArgs(functionSpec FunctionSpec) {
 // 	)
 // 	return &http.HttpImpl{}
 // }
+// TODO: should make the function more globaly
 func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDependencyInjection) {
 	a.file.Decls = append(a.file.Decls[:len(a.file.Decls)], a.file.Decls...)
-	a.file.Decls[0] = &ast.GenDecl{
-		Tok: token.VAR,
-		Specs: []ast.Spec{
-			&ast.ValueSpec{
-				Names: []*ast.Ident{
-					{
-						Name: wireDependency.VarName,
-						Obj: &ast.Object{
-							Kind: ast.ObjKind(token.VAR),
+
+	if wireDependency.InterfaceLib == "" && wireDependency.InterfaceName == "" &&
+		wireDependency.StructLib == "" && wireDependency.StructName == "" {
+		a.file.Decls[0] = &ast.GenDecl{
+			Tok: token.VAR,
+			Specs: []ast.Spec{
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
 							Name: wireDependency.VarName,
+							Obj: &ast.Object{
+								Kind: ast.ObjKind(token.VAR),
+								Name: wireDependency.VarName,
+							},
+						},
+					},
+					Values: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("wire"),
+								Sel: ast.NewIdent("NewSet"),
+							},
+							Args: []ast.Expr{
+								&ast.SelectorExpr{
+									X:   ast.NewIdent(wireDependency.TargetInjectName),
+									Sel: ast.NewIdent(wireDependency.TargetInjectConstructName),
+								},
+							},
 						},
 					},
 				},
-				Values: []ast.Expr{
-					&ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent("wire"),
-							Sel: ast.NewIdent("NewSet"),
-						},
-						Args: []ast.Expr{
-							&ast.SelectorExpr{
-								X:   ast.NewIdent(wireDependency.TargetInjectName),
-								Sel: ast.NewIdent(wireDependency.TargetInjectConstructName),
+			},
+		}
+	} else {
+		a.file.Decls[0] = &ast.GenDecl{
+			Tok: token.VAR,
+			Specs: []ast.Spec{
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: wireDependency.VarName,
+							Obj: &ast.Object{
+								Kind: ast.ObjKind(token.VAR),
+								Name: wireDependency.VarName,
 							},
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("wire"),
-									Sel: ast.NewIdent("Bind"),
+						},
+					},
+					Values: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("wire"),
+								Sel: ast.NewIdent("NewSet"),
+							},
+							Args: []ast.Expr{
+								&ast.SelectorExpr{
+									X:   ast.NewIdent(wireDependency.TargetInjectName),
+									Sel: ast.NewIdent(wireDependency.TargetInjectConstructName),
 								},
-								Args: []ast.Expr{
-									&ast.CallExpr{
-										Fun: ast.NewIdent("new"),
-										Args: []ast.Expr{
-											&ast.SelectorExpr{
-												X:   ast.NewIdent(wireDependency.InterfaceLib),
-												Sel: ast.NewIdent(wireDependency.InterfaceName),
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X:   ast.NewIdent("wire"),
+										Sel: ast.NewIdent("Bind"),
+									},
+									Args: []ast.Expr{
+										&ast.CallExpr{
+											Fun: ast.NewIdent("new"),
+											Args: []ast.Expr{
+												&ast.SelectorExpr{
+													X:   ast.NewIdent(wireDependency.InterfaceLib),
+													Sel: ast.NewIdent(wireDependency.InterfaceName),
+												},
 											},
 										},
-									},
-									&ast.CallExpr{
-										Fun: ast.NewIdent("new"),
-										Args: []ast.Expr{
-											&ast.StarExpr{
-												X: &ast.SelectorExpr{
-													X:   ast.NewIdent(wireDependency.StructLib),
-													Sel: ast.NewIdent(wireDependency.StructName),
+										&ast.CallExpr{
+											Fun: ast.NewIdent("new"),
+											Args: []ast.Expr{
+												&ast.StarExpr{
+													X: &ast.SelectorExpr{
+														X:   ast.NewIdent(wireDependency.StructLib),
+														Sel: ast.NewIdent(wireDependency.StructName),
+													},
 												},
 											},
 										},
@@ -601,10 +636,8 @@ func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDepende
 					},
 				},
 			},
-		},
+		}
 	}
-
-	// TODO: Add to wire.Build() func to
 }
 
 func (a *AbstractCodeImpl) AddFunctionCaller(funcName string, callerSpec CallerSpec) {

@@ -2181,4 +2181,170 @@ func InitHttpProtocol() *http.HttpImpl {
 		fmt.Println(act)
 		assert.Equal(t, exp, act)
 	})
+
+	t.Run("Test add wire dependency injection 2", func(t *testing.T) {
+		code := `
+		package test
+		`
+
+		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
+		abstractCode.AddFunction(libast.FunctionSpecList{
+			&libast.FunctionSpec{
+				Name: "InitHttpProtocol",
+				Returns: &libast.FunctionReturnSpecList{
+					&libast.FunctionReturnSpec{
+						IsPointer: true,
+						IsStruct:  true,
+						LibName:   "http",
+						DataType:  "HttpImpl",
+						Return:    "HttpImpl",
+					},
+				},
+			},
+		})
+		err := abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act := abstractCode.GetCode()
+
+		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
+		abstractCode.AddFunctionCaller("InitHttpProtocol", libast.CallerSpec{
+			Func: libast.CallerFunc{
+				Name:     "wire",
+				Selector: "Build",
+			},
+		})
+		err = abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act = abstractCode.GetCode()
+
+		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
+		abstractCode.AddWireDependencyInjection(libast.WireDependencyInjection{
+			VarName:                   "productSvc",
+			TargetInjectName:          "productsvc",
+			TargetInjectConstructName: "NewProductService",
+			InterfaceLib:              "productsvc",
+			InterfaceName:             "ProductService",
+			StructLib:                 "productsvc",
+			StructName:                "ProductServiceImpl",
+		})
+		err = abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act = abstractCode.GetCode()
+
+		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
+		abstractCode.AddArgsToCallExpr(
+			libast.CallerSpec{
+				Func: libast.CallerFunc{
+					Name:     "wire",
+					Selector: "Build",
+				},
+				Args: libast.CallerArgList{
+					&libast.CallerArg{
+						Ident: &libast.CallerArgIdent{
+							Name: "productSvc",
+						},
+					},
+				},
+			},
+		)
+		err = abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act = abstractCode.GetCode()
+
+		// don't touch the expected code please
+		// expect you change the test case please :D
+		// building this string obviously difficult
+		exp := `package test
+
+var productSvc = wire.NewSet(productsvc.NewProductService, wire.Bind(new(productsvc.ProductService), new(*productsvc.ProductServiceImpl)))
+
+func InitHttpProtocol() *http.HttpImpl {
+	wire.Build(productSvc)
+	return &http.HttpImpl{}
+}
+`
+		fmt.Println(act)
+		assert.Equal(t, exp, act)
+	})
+
+	t.Run("Test add wire dependency injection 3", func(t *testing.T) {
+		code := `
+		package test
+		`
+
+		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
+		abstractCode.AddFunction(libast.FunctionSpecList{
+			&libast.FunctionSpec{
+				Name: "InitHttpProtocol",
+				Returns: &libast.FunctionReturnSpecList{
+					&libast.FunctionReturnSpec{
+						IsPointer: true,
+						IsStruct:  true,
+						LibName:   "http",
+						DataType:  "HttpImpl",
+						Return:    "HttpImpl",
+					},
+				},
+			},
+		})
+		err := abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act := abstractCode.GetCode()
+
+		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
+		abstractCode.AddFunctionCaller("InitHttpProtocol", libast.CallerSpec{
+			Func: libast.CallerFunc{
+				Name:     "wire",
+				Selector: "Build",
+			},
+		})
+		err = abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act = abstractCode.GetCode()
+
+		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
+		abstractCode.AddWireDependencyInjection(libast.WireDependencyInjection{
+			VarName:                   "productSvc",
+			TargetInjectName:          "productsvc",
+			TargetInjectConstructName: "NewProductService",
+		})
+		err = abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act = abstractCode.GetCode()
+
+		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
+		abstractCode.AddArgsToCallExpr(
+			libast.CallerSpec{
+				Func: libast.CallerFunc{
+					Name:     "wire",
+					Selector: "Build",
+				},
+				Args: libast.CallerArgList{
+					&libast.CallerArg{
+						Ident: &libast.CallerArgIdent{
+							Name: "productSvc",
+						},
+					},
+				},
+			},
+		)
+		err = abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act = abstractCode.GetCode()
+
+		// don't touch the expected code please
+		// expect you change the test case please :D
+		// building this string obviously difficult
+		exp := `package test
+
+var productSvc = wire.NewSet(productsvc.NewProductService)
+
+func InitHttpProtocol() *http.HttpImpl {
+	wire.Build(productSvc)
+	return &http.HttpImpl{}
+}
+`
+		fmt.Println(act)
+		assert.Equal(t, exp, act)
+	})
 }
