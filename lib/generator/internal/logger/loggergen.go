@@ -1,38 +1,30 @@
-package misc
+package logger
 
 import (
-	"github.com/nurcahyaari/kite/lib/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 	"github.com/nurcahyaari/kite/utils/logger"
 )
 
-type LoggerOption struct {
-	impl.GeneratorOptions
-	InfrastructurePath string
-	DirName            string
-	DirPath            string
-	QueueType          string
+type LoggerGen interface {
+	CreateLoggerDir() error
+	CreateDefaultLoggerFile() error
 }
 
-func NewLogger(options LoggerOption) impl.AppGenerator {
-	options.DirName = "logger"
-	options.DirPath = fs.ConcatDirPath(options.InfrastructurePath, options.DirName)
-
-	return options
+type LoggerGenImpl struct {
+	LoggerDir string
 }
 
-func (o LoggerOption) Run() error {
-
-	o.createLoggerDir()
-	o.createDefaultLoggerFile()
-
-	return nil
+func NewLoggerGen(internalPath string) *LoggerGenImpl {
+	loggerDir := fs.ConcatDirPath(internalPath, "logger")
+	return &LoggerGenImpl{
+		LoggerDir: loggerDir,
+	}
 }
 
-func (o LoggerOption) createLoggerDir() error {
+func (s *LoggerGenImpl) CreateLoggerDir() error {
 	logger.Info("Creating internal/logger directory... ")
-	err := fs.CreateFolderIsNotExist(o.DirPath)
+	err := fs.CreateFolderIsNotExist(s.LoggerDir)
 	if err != nil {
 		return err
 	}
@@ -40,7 +32,7 @@ func (o LoggerOption) createLoggerDir() error {
 	return nil
 }
 
-func (o LoggerOption) createDefaultLoggerFile() error {
+func (s *LoggerGenImpl) CreateDefaultLoggerFile() error {
 	logger.Info("Creating internal/logger/log.go file... ")
 
 	tmpl := templates.NewTemplate(templates.Template{
@@ -67,7 +59,7 @@ func (o LoggerOption) createDefaultLoggerFile() error {
 		return err
 	}
 
-	err = fs.CreateFileIfNotExist(o.DirPath, "log.go", templateString)
+	err = fs.CreateFileIfNotExist(s.LoggerDir, "log.go", templateString)
 	if err != nil {
 		return err
 	}

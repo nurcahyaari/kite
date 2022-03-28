@@ -3,35 +3,25 @@ package infrastructure
 import (
 	"fmt"
 
-	"github.com/nurcahyaari/kite/lib/impl"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
-type DBOption struct {
-	impl.GeneratorOptions
+type DatabaseGen interface {
+	CreateMysqlConnection() error
+}
+
+type DatabaseGenImpl struct {
+	AppName            string
 	InfrastructurePath string
-	DirName            string
-	DirPath            string
+	GomodName          string
 }
 
-func NewDB(options DBOption) impl.AppGenerator {
-	options.DirPath = options.InfrastructurePath
-
-	return options
+func NewDatabaseGen(dbGenImpl DatabaseGenImpl) *DatabaseGenImpl {
+	return &dbGenImpl
 }
 
-func (o DBOption) Run() error {
-	err := o.createMysqlConnection()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o DBOption) createMysqlConnection() error {
-
+func (s *DatabaseGenImpl) CreateMysqlConnection() error {
 	connectionTemplate := `
 	dbHost := config.Get().DB.Mysql.Host
 	dbPort := config.Get().DB.Mysql.Port
@@ -49,7 +39,7 @@ func (o DBOption) createMysqlConnection() error {
 				FilePath: "fmt",
 			},
 			{
-				FilePath: fmt.Sprintf("%s/config", o.GoModName),
+				FilePath: fmt.Sprintf("%s/config", s.GomodName),
 			},
 			{
 				FilePath: "github.com/go-sql-driver/mysql",
@@ -63,9 +53,9 @@ func (o DBOption) createMysqlConnection() error {
 			},
 		},
 		Data: map[string]interface{}{
-			"AppName":            o.AppName,
+			"AppName":            s.AppName,
 			"ConnectionTemplate": connectionTemplate,
-			"DBDialeg":           o.DefaultDBDialeg,
+			"DBDialeg":           "mysql",
 		},
 	})
 
@@ -74,7 +64,5 @@ func (o DBOption) createMysqlConnection() error {
 		return err
 	}
 
-	fs.CreateFileIfNotExist(o.DirPath, fmt.Sprintf("%s.go", o.DefaultDBDialeg), templateString)
-
-	return nil
+	return fs.CreateFileIfNotExist(s.InfrastructurePath, "mysql.go", templateString)
 }

@@ -10,12 +10,13 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/nurcahyaari/kite/utils"
 	"github.com/nurcahyaari/kite/utils/logger"
 	"golang.org/x/mod/modfile"
 )
 
 // checkTemplateLocationIsExist is a function for validate is the template location exist
-func checkTemplateLocationIsExist(templateLocation string) error {
+func checkTemplateLocationIsExist(templateLocation string) bool {
 	return IsFolderExist(templateLocation)
 }
 
@@ -27,30 +28,19 @@ func ConcatDirPath(basePath, newDir string) string {
 // GetAppNameBasedOnGoMod will set the appname based on the go mod init
 func GetAppNameBasedOnGoMod(goModName string) string {
 	appName := strings.Split(goModName, "/")
-	return appName[len(appName)-1]
+	return utils.CapitalizeFirstLetter(appName[len(appName)-1])
 }
 
-func IsFolderExist(path string) error {
+func IsFolderExist(path string) bool {
 	_, err := os.Stat(path)
-	if !os.IsNotExist(err) {
-		return printErr(FolderWasCreated)
-	}
 
-	return nil
+	return !os.IsNotExist(err)
 }
 
-// func IsFileExist(filelocation string) error {
-// 	fileinfo, err := os.Stat(filelocation)
-// 	if !os.IsNotExist(err) {
-// 		return printErr(FileWasCreated)
-// 	}
-
-// 	if fileinfo.IsDir() {
-// 		return printErr(FileIsNotFileButADir)
-// 	}
-
-// 	return nil
-// }
+func IsFileExist(filelocation string) bool {
+	_, err := os.Stat(filelocation)
+	return !os.IsNotExist(err)
+}
 
 func CreateFolder(path string) error {
 	if err := os.MkdirAll(path, 0755); err != nil {
@@ -61,9 +51,8 @@ func CreateFolder(path string) error {
 }
 
 func CreateFolderIsNotExist(path string) error {
-	err := IsFolderExist(path)
-	if err != nil {
-		return err
+	if IsFolderExist(path) {
+		return printErr(FolderWasCreated)
 	}
 	CreateFolder(path)
 
@@ -87,12 +76,11 @@ func CreateFile(path, fileName, template string) error {
 }
 
 func CreateFileIfNotExist(path, fileName, template string) error {
-	err := IsFolderExist(fmt.Sprintf("%s%s", path, fileName))
-	if err != nil {
-		return err
+	if IsFolderExist(fmt.Sprintf("%s%s", path, fileName)) {
+		return printErr(FolderWasCreated)
 	}
 
-	err = CreateFile(path, fileName, template)
+	err := CreateFile(path, fileName, template)
 	if err != nil {
 		return err
 	}
@@ -115,7 +103,7 @@ func ReplaceFile(path, filename, template string) error {
 }
 
 func DeleteFolder(path string) {
-	os.RemoveAll(path)
+	os.RemoveAll(fmt.Sprintf("%s/", path))
 }
 
 func DeleteFile(filepath string) error {
