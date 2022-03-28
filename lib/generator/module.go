@@ -28,6 +28,7 @@ func NewModule(moduleName string, info ProjectInfo) Module {
 }
 
 func (s *ModuleImpl) CreateNewModule() error {
+	logger.Info(fmt.Sprintf("Creating %s file... ", s.Name))
 	moduleDirParentPath := fs.ConcatDirPath(s.Info.ProjectPath, "src")
 	moduleGen := module.NewModuleGen(s.Info.ProjectPath, s.Name, s.Info.GoModName)
 

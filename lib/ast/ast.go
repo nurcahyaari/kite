@@ -24,6 +24,7 @@ type AbstractCode interface {
 	AddStructs(structSpecs StructSpecList)
 	AddStructVarDecl(structArgs StructArgList)
 	AddWireDependencyInjection(wireDependency WireDependencyInjection)
+	AddGlobalVariables()
 	AddFunction(functionSpecs FunctionSpecList)
 	AddFunctionArgs(functionSpec FunctionSpec)
 	AddFunctionCaller(funcName string, callerSpec CallerSpec)
@@ -639,6 +640,10 @@ func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDepende
 			},
 		}
 	}
+}
+
+func (a *AbstractCodeImpl) AddGlobalVariables() {
+
 }
 
 func (a *AbstractCodeImpl) AddFunctionCaller(funcName string, callerSpec CallerSpec) {

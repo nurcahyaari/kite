@@ -31,6 +31,10 @@ func InfoSuccessln(msg interface{}) {
 	fmt.Println(s)
 }
 
+func Successf(msg interface{}) string {
+	return fmt.Sprintf(InfoSuccessColor, msg)
+}
+
 func Error(msg interface{}) {
 	s := fmt.Sprintf(ErrorColor, msg)
 	fmt.Print(s)
@@ -41,12 +45,20 @@ func Errorln(msg interface{}) {
 	fmt.Println(s)
 }
 
+func Errorf(msg interface{}) string {
+	return fmt.Sprintf(ErrorColor, msg)
+}
+
 func Warn(msg interface{}) {
 	s := fmt.Sprintf(WarningColor, msg)
 	fmt.Print(s)
 }
 
-func Warnlm(msg interface{}) {
+func Warnln(msg interface{}) {
 	s := fmt.Sprintf(WarningColor, msg)
 	fmt.Println(s)
+}
+
+func Warnf(msg interface{}) string {
+	return fmt.Sprintf(WarningColor, msg)
 }

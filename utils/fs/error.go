@@ -3,6 +3,8 @@ package fs
 import (
 	"errors"
 	"fmt"
+
+	"github.com/nurcahyaari/kite/utils/logger"
 )
 
 type filesystemErr string
@@ -21,5 +23,5 @@ const (
 
 // panicErr return an error message
 func printErr(errorName filesystemErr) error {
-	return errors.New(fmt.Sprintf("%s", errorName))
+	return errors.New(logger.Errorf(fmt.Sprintf("%s", errorName)))
 }
