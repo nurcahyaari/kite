@@ -239,6 +239,9 @@ func (s AppImpl) createMainApp() error {
 	if err != nil {
 		return err
 	}
+
+	fs.GoFormat(s.Info.ProjectPath, s.Info.GoModName)
+
 	logger.InfoSuccessln("success")
 	return nil
 }
