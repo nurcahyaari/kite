@@ -54,29 +54,55 @@ func (a *AbstractCodeImpl) GetCode() string {
 }
 
 func (a *AbstractCodeImpl) AddImport(importSpec ImportSpec) {
+	foundImport := false
 	for _, decl := range a.file.Decls {
 		gendecl, ok := decl.(*ast.GenDecl)
 		if ok {
-			for _, genspecs := range gendecl.Specs {
-				_, ok := genspecs.(*ast.ImportSpec)
-				if ok {
-					gendecl.Specs = append(gendecl.Specs, &ast.ImportSpec{
-						Name: &ast.Ident{
-							Name: importSpec.Name,
-						},
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: importSpec.Path,
-						},
-					})
-					// breaking after importing in the import spec
+			if gendecl.Tok == token.IMPORT {
+				foundImport = true
+				for _, genspecs := range gendecl.Specs {
+					_, ok := genspecs.(*ast.ImportSpec)
+					if ok {
+						gendecl.Specs = append(gendecl.Specs, &ast.ImportSpec{
+							Name: &ast.Ident{
+								Name: importSpec.Name,
+							},
+							Path: &ast.BasicLit{
+								Kind:  token.STRING,
+								Value: importSpec.Path,
+							},
+						})
+						// breaking after importing in the import spec
+						break
+					}
+					// if not ok means that the genspec is not ast.ImportSpec
+					// so break this
 					break
 				}
-				// if not ok means that the genspec is not ast.ImportSpec
-				// so break this
+			} else {
 				break
 			}
 		}
+	}
+
+	// if there's no import statement
+	if !foundImport {
+		newDecls := append(a.file.Decls[:1], a.file.Decls...)
+		newDecls[0] = &ast.GenDecl{
+			Tok: token.IMPORT,
+			Specs: []ast.Spec{
+				&ast.ImportSpec{
+					Name: &ast.Ident{
+						Name: importSpec.Name,
+					},
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: importSpec.Path,
+					},
+				},
+			},
+		}
+		a.file.Decls = newDecls
 	}
 }
 

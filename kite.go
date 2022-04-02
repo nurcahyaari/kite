@@ -93,6 +93,6 @@ func main() {
 
 	err = app.Run(os.Args)
 	if err != nil {
-		fmt.Errorf("Error ", err)
+		fmt.Println(err)
 	}
 }

@@ -1,7 +1,10 @@
 package config
 
 import (
-	"github.com/nurcahyaari/kite/templates"
+	"go/parser"
+
+	"github.com/nurcahyaari/kite/lib/ast"
+	"github.com/nurcahyaari/kite/templates/configtemplate"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
@@ -35,30 +38,31 @@ func (s *ConfigGenImpl) CreateConfigDir() error {
 }
 
 func (s *ConfigGenImpl) CreateConfigFile() error {
-	tmpl := templates.NewTemplate(templates.Template{
-		PackageName: "config",
-		Template:    templates.ConfigTemplate,
-		Import: []templates.ImportedPackage{
-			{
-				FilePath: "log",
-			},
-			{
-				FilePath: "sync",
-			},
-			{
-				FilePath: "github.com/spf13/viper",
-			},
-		},
-		Data: map[string]interface{}{
-			"AppName":  s.AppName,
-			"DBDialeg": "mysql",
-		},
+	templateNew := configtemplate.NewConfigTemplate(configtemplate.ConfigTemplateData{
+		DatabaseDialeg: "mysql",
 	})
-
-	templateString, err := tmpl.Render()
+	configTemplate, err := templateNew.Render()
 	if err != nil {
 		return err
 	}
 
-	return fs.CreateFileIfNotExist(s.ConfigPath, "config.go", templateString)
+	configAbstractCode := ast.NewAbstractCode(configTemplate, parser.ParseComments)
+	configAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"log\"",
+	})
+	configAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"sync\"",
+	})
+	configAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"github.com/spf13/viper\"",
+	})
+	// after manipulate the code, rebuild the code
+	err = configAbstractCode.RebuildCode()
+	if err != nil {
+		return err
+	}
+	// get the manipulate code
+	configCode := configAbstractCode.GetCode()
+
+	return fs.CreateFileIfNotExist(s.ConfigPath, "config.go", configCode)
 }

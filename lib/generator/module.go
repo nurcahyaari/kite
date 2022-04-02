@@ -35,7 +35,6 @@ func (s *ModuleImpl) CreateNewModule() error {
 	if !fs.IsFolderExist(moduleDirParentPath) {
 		err := moduleGen.CreateSrcDir()
 		if err != nil {
-			fmt.Println(err)
 			return err
 		}
 	}
@@ -44,7 +43,6 @@ func (s *ModuleImpl) CreateNewModule() error {
 
 	err := moduleGen.CreateNewModule()
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
@@ -60,30 +58,25 @@ func (s *ModuleImpl) CreateNewModule() error {
 
 	err = moduleGen.CreateRepositoryDir()
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	err = moduleGen.CreateRepositoryFile()
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
 	err = moduleGen.CreateServiceDir()
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	err = moduleGen.CreateServiceFile()
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
 	moduleGen.CreateBaseHandlerDir()
 	err = moduleGen.CreateHandlerFile()
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 

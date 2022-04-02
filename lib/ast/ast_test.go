@@ -12,17 +12,17 @@ import (
 func TestAddImport(t *testing.T) {
 	t.Run("Test add import 1", func(t *testing.T) {
 		code := `
-		package test
-		import (
-			a "path/of/package/a"
-			"path/of/package/b"
-			usermodel "path/model/user"
-		)
+			package test
+			import (
+				a "path/of/package/a"
+				"path/of/package/b"
+				usermodel "path/model/user"
+			)
 
-		func main() {
-			
-		}
-		`
+			func main() {
+
+			}
+			`
 
 		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
 		abstractCode.AddImport(libast.ImportSpec{
@@ -54,21 +54,21 @@ func main() {
 
 	t.Run("Test add import 2", func(t *testing.T) {
 		code := `
-		package test
-		import (
-			a "path/of/package/a"
-			"path/of/package/b"
-			usermodel "path/model/user"
-		)
+			package test
+			import (
+				a "path/of/package/a"
+				"path/of/package/b"
+				usermodel "path/model/user"
+			)
 
-		const a = "init"
+			const a = "init"
 
-		type b int
+			type b int
 
-		func main() {
-			
-		}
-		`
+			func main() {
+
+			}
+			`
 
 		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
 		abstractCode.AddImport(libast.ImportSpec{
@@ -104,8 +104,51 @@ func main() {
 
 	t.Run("Test add import 3", func(t *testing.T) {
 		code := `
+			package test
+			import "path/of/package/a"
+
+			const a = "init"
+
+			type b int
+
+			func main() {
+
+			}
+			`
+
+		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
+		abstractCode.AddImport(libast.ImportSpec{
+			Name: "b",
+			Path: "\"path/of/package/b\"",
+		})
+		err := abstractCode.RebuildCode()
+		act := abstractCode.GetCode()
+		// don't touch the expected code please
+		// expect you change the test case please :D
+		// building this string obviously difficult
+		exp := `package test
+
+import (
+	"path/of/package/a"
+	b "path/of/package/b"
+)
+
+const a = "init"
+
+type b int
+
+func main() {
+
+}
+`
+
+		assert.NoError(t, err)
+		assert.Equal(t, exp, act)
+	})
+
+	t.Run("Test add import 4", func(t *testing.T) {
+		code := `
 		package test
-		import "path/of/package/a"
 
 		const a = "init"
 
@@ -128,10 +171,7 @@ func main() {
 		// building this string obviously difficult
 		exp := `package test
 
-import (
-	"path/of/package/a"
-	b "path/of/package/b"
-)
+import b "path/of/package/b"
 
 const a = "init"
 
@@ -713,7 +753,6 @@ func main() {
 		})
 		err := abstractCode.RebuildCode()
 		act := abstractCode.GetCode()
-		fmt.Println(act)
 		// don't touch the expected code please
 		// expect you change the test case please :D
 		// building this string obviously difficult

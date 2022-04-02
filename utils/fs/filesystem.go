@@ -118,7 +118,6 @@ func GoFormat(path, goModName string) error {
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
-		fmt.Println(err)
 		return printErr(GoFmtErr)
 	}
 

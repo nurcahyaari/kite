@@ -22,7 +22,6 @@ type HttpHandlerGenImpl struct {
 
 func NewHttpHandlerGen(moduleName, modulePath, gomodName string) *HttpHandlerGenImpl {
 	handlerPath := fs.ConcatDirPath(modulePath, protocol.Http.ToString())
-	fmt.Println(handlerPath)
 	return &HttpHandlerGenImpl{
 		ModuleName:  moduleName,
 		HandlerPath: handlerPath,

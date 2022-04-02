@@ -7,6 +7,12 @@ import (
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
+type DbType int
+
+const (
+	DbMysql DbType = iota
+)
+
 type DatabaseGen interface {
 	CreateMysqlConnection() error
 }
@@ -15,6 +21,7 @@ type DatabaseGenImpl struct {
 	AppName            string
 	InfrastructurePath string
 	GomodName          string
+	DatabaseType       DbType
 }
 
 func NewDatabaseGen(dbGenImpl DatabaseGenImpl) *DatabaseGenImpl {

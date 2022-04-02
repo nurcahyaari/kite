@@ -41,7 +41,6 @@ func (s AppImpl) CreateNewApp() error {
 
 	err := fs.CreateFolderIsNotExist(s.Info.ProjectPath)
 	if err != nil {
-		fmt.Println(err)
 		return errors.New(fmt.Sprintf("%s already created", s.Name))
 	}
 
@@ -177,11 +176,7 @@ func (s AppImpl) CreateNewApp() error {
 		return err
 	}
 
-	err = moduleGen.CreateBaseModuleDir()
-	if err != nil {
-		s.rollback()
-		return err
-	}
+	moduleGen.CreateBaseModuleDir()
 
 	// create main file
 	err = s.createMainApp()
@@ -239,8 +234,6 @@ func (s AppImpl) createMainApp() error {
 	if err != nil {
 		return err
 	}
-
-	fs.GoFormat(s.Info.ProjectPath, s.Info.GoModName)
 
 	logger.InfoSuccessln("success")
 	return nil

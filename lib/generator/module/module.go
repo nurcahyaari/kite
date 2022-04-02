@@ -1,7 +1,7 @@
 package module
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/nurcahyaari/kite/utils/fs"
 )
@@ -74,8 +74,8 @@ func (s *ModuleGenImpl) CreateSrcDir() error {
 
 func (s *ModuleGenImpl) CreateBaseModuleDir() error {
 	// validate is project exist
-	if fs.IsFolderExist(s.ProjectPath) {
-		return errors.New("project path is not exist")
+	if !fs.IsFolderExist(s.ProjectPath) {
+		return fmt.Errorf("%s project path is not exist", s.ProjectPath)
 	}
 
 	moduleDir := fs.ConcatDirPath(s.DirectoryPath, "module")
