@@ -86,10 +86,6 @@ func (s WireGenImpl) CreateWireFiles() error {
 		VarName:                   "httpHandler",
 		TargetInjectName:          "httphandler",
 		TargetInjectConstructName: "NewHttpHandler",
-		InterfaceLib:              "httphandler",
-		InterfaceName:             "HttpHandler",
-		StructLib:                 "httphandler",
-		StructName:                "HttpHandlerImpl",
 	})
 	err = abstractCode.RebuildCode()
 	if err != nil {

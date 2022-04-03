@@ -43,11 +43,57 @@ func (s *HttpHandlerGenImpl) CreateHttpHandlerBaseDir() error {
 
 func (s *HttpHandlerGenImpl) CreateHttpHandlerBaseFile() error {
 	// var tmplBaseFile templates.Template
-	tmplBaseFile := s.createbaseModuleHttpFile()
-	templateBaseFileString, err := tmplBaseFile.Render()
+
+	templateNew := templates.NewTemplateNewImpl("http", "")
+	templateCode, err := templateNew.Render("", nil)
 	if err != nil {
 		return err
 	}
+
+	abstractCode := ast.NewAbstractCode(templateCode, parser.ParseComments)
+	abstractCode.AddFunction(ast.FunctionSpecList{
+		&ast.FunctionSpec{
+			Name: "Router",
+			StructSpec: &ast.FunctionStructSpec{
+				Name:      "h",
+				DataTypes: "HttpHandlerImpl",
+			},
+			Args: ast.FunctionArgList{
+				&ast.FunctionArg{
+					IsPointer: true,
+					Name:      "r",
+					LibName:   "chi",
+					DataType:  "Mux",
+				},
+			},
+		},
+	})
+	abstractCode.AddFunction(ast.FunctionSpecList{
+		&ast.FunctionSpec{
+			Name: "NewHttpHandler",
+			Returns: &ast.FunctionReturnSpecList{
+				&ast.FunctionReturnSpec{
+					IsPointer: true,
+					IsStruct:  true,
+					DataType:  "HttpHandlerImpl",
+					Return:    "HttpHandlerImpl",
+				},
+			},
+		},
+	})
+	abstractCode.AddStructs(ast.StructSpecList{
+		&ast.StructSpec{
+			Name: "HttpHandlerImpl",
+		},
+	})
+	abstractCode.AddImport(ast.ImportSpec{
+		Path: "\"github.com/go-chi/chi/v5\"",
+	})
+	err = abstractCode.RebuildCode()
+	if err != nil {
+		return err
+	}
+	templateBaseFileString := abstractCode.GetCode()
 
 	baseHandlerFile := fmt.Sprintf("%s_handler.go", protocol.Http.ToString())
 	if !fs.IsFileExist(fs.ConcatDirPath(s.HandlerPath, baseHandlerFile)) {
@@ -82,7 +128,7 @@ func (s *HttpHandlerGenImpl) createbaseModuleHttpFile() templates.Template {
 		PackageName: "http",
 		Import: []templates.ImportedPackage{
 			{
-				FilePath: "github.com/go-chi/chi/v5",
+				FilePath: "",
 			},
 		},
 		IsDependency: true,

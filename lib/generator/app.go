@@ -3,13 +3,15 @@ package generator
 import (
 	"errors"
 	"fmt"
+	"go/parser"
 
+	"github.com/nurcahyaari/kite/lib/ast"
 	"github.com/nurcahyaari/kite/lib/generator/config"
 	"github.com/nurcahyaari/kite/lib/generator/infrastructure"
 	"github.com/nurcahyaari/kite/lib/generator/internal"
 	"github.com/nurcahyaari/kite/lib/generator/misc"
 	"github.com/nurcahyaari/kite/lib/generator/module"
-	"github.com/nurcahyaari/kite/templates"
+	"github.com/nurcahyaari/kite/templates/misctemplate"
 	"github.com/nurcahyaari/kite/utils/fs"
 	"github.com/nurcahyaari/kite/utils/logger"
 	"github.com/nurcahyaari/kite/utils/pkg"
@@ -214,28 +216,23 @@ func (s AppImpl) CreateNewApp() error {
 func (s AppImpl) createMainApp() error {
 	logger.Info("Create main.go file... ")
 
-	tmpl := templates.NewTemplate(templates.Template{
-		PackageName: "main",
-		Template:    templates.MainTemplate,
-		Data: map[string]interface{}{
-			"GoGenerate": []string{
-				"//go:generate go run github.com/google/wire/cmd/wire",
-				"//go:generate go run github.com/swaggo/swag/cmd/swag init",
-			},
-		},
-		Import: []templates.ImportedPackage{
-			{
-				FilePath: fmt.Sprintf("%s/internal/logger", s.Info.GoModName),
-			},
-		},
+	templateNew := misctemplate.NewMainTemplate()
+	mainTemplate, err := templateNew.Render()
+	if err != nil {
+		return err
+	}
+	mainAbstractCode := ast.NewAbstractCode(mainTemplate, parser.ParseComments)
+	mainAbstractCode.AddImport(ast.ImportSpec{
+		Path: fmt.Sprintf("\"%s/internal/logger\"", s.Info.GoModName),
 	})
-
-	templateString, err := tmpl.Render()
+	err = mainAbstractCode.RebuildCode()
 	if err != nil {
 		return err
 	}
 
-	err = fs.CreateFileIfNotExist(s.Info.ProjectPath, "main.go", templateString)
+	mainTemplate = mainAbstractCode.GetCode()
+
+	err = fs.CreateFileIfNotExist(s.Info.ProjectPath, "main.go", mainTemplate)
 	if err != nil {
 		return err
 	}

@@ -185,6 +185,29 @@ func main() {
 		assert.NoError(t, err)
 		assert.Equal(t, exp, act)
 	})
+
+	t.Run("Test add import 5", func(t *testing.T) {
+		code := `
+		package test
+		`
+
+		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
+		abstractCode.AddImport(libast.ImportSpec{
+			Path: "\"path/of/package/b\"",
+		})
+		err := abstractCode.RebuildCode()
+		act := abstractCode.GetCode()
+		// don't touch the expected code please
+		// expect you change the test case please :D
+		// building this string obviously difficult
+		exp := `package test
+
+import  "path/of/package/b"
+`
+
+		assert.NoError(t, err)
+		assert.Equal(t, exp, act)
+	})
 }
 
 func TestAddInterface(t *testing.T) {
@@ -2524,7 +2547,6 @@ package test
 
 func main()	{}
 `
-		fmt.Println(act)
 		assert.Equal(t, exp, act)
 	})
 
@@ -2552,7 +2574,7 @@ func main()	{}
 // Main function
 func main()	{}
 `
-		fmt.Println(act)
 		assert.Equal(t, exp, act)
 	})
+
 }

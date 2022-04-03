@@ -87,22 +87,41 @@ func (a *AbstractCodeImpl) AddImport(importSpec ImportSpec) {
 
 	// if there's no import statement
 	if !foundImport {
-		newDecls := append(a.file.Decls[:1], a.file.Decls...)
-		newDecls[0] = &ast.GenDecl{
-			Tok: token.IMPORT,
-			Specs: []ast.Spec{
-				&ast.ImportSpec{
-					Name: &ast.Ident{
-						Name: importSpec.Name,
-					},
-					Path: &ast.BasicLit{
-						Kind:  token.STRING,
-						Value: importSpec.Path,
+		if len(a.file.Decls) > 0 {
+			newDecls := append(a.file.Decls[:1], a.file.Decls...)
+			newDecls[0] = &ast.GenDecl{
+				Tok: token.IMPORT,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Name: &ast.Ident{
+							Name: importSpec.Name,
+						},
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: importSpec.Path,
+						},
 					},
 				},
-			},
+			}
+			a.file.Decls = newDecls
+		} else {
+			a.file.Decls = append(a.file.Decls, &ast.GenDecl{
+				Tok:    token.IMPORT,
+				TokPos: token.Pos(0),
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Name: &ast.Ident{
+							Name: importSpec.Name,
+						},
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: importSpec.Path,
+						},
+					},
+				},
+			})
 		}
-		a.file.Decls = newDecls
+
 	}
 }
 
@@ -206,21 +225,39 @@ func (a *AbstractCodeImpl) AddStructs(structSpecs StructSpecList) {
 			}
 		}
 
-		decls = append(a.file.Decls[:structIndex+1], a.file.Decls[structIndex:]...)
-		decls[structIndex] = &ast.GenDecl{
-			Tok: token.TYPE,
-			Specs: []ast.Spec{
-				&ast.TypeSpec{
-					Name: &ast.Ident{
-						Name: structSpec.Name,
-					},
-					Type: &ast.StructType{
-						Fields:     &ast.FieldList{},
-						Incomplete: false,
+		if len(a.file.Decls) > 0 {
+			decls = append(a.file.Decls[:structIndex+1], a.file.Decls[structIndex:]...)
+			decls[structIndex] = &ast.GenDecl{
+				Tok: token.TYPE,
+				Specs: []ast.Spec{
+					&ast.TypeSpec{
+						Name: &ast.Ident{
+							Name: structSpec.Name,
+						},
+						Type: &ast.StructType{
+							Fields:     &ast.FieldList{},
+							Incomplete: false,
+						},
 					},
 				},
-			},
+			}
+		} else {
+			decls = append(decls, &ast.GenDecl{
+				Tok: token.TYPE,
+				Specs: []ast.Spec{
+					&ast.TypeSpec{
+						Name: &ast.Ident{
+							Name: structSpec.Name,
+						},
+						Type: &ast.StructType{
+							Fields:     &ast.FieldList{},
+							Incomplete: false,
+						},
+					},
+				},
+			})
 		}
+
 		a.file.Decls = decls
 	}
 }
@@ -787,7 +824,6 @@ func (a *AbstractCodeImpl) AddFunctionArgsToReturn(functionReturnArgs FunctionRe
 func (a *AbstractCodeImpl) AddCommentOutsideFunction(commentSpec Comment) {
 	ast.Inspect(a.file, func(n ast.Node) bool {
 		if commentSpec.FunctionName != "" {
-			// search function by name
 			funcdecl, ok := n.(*ast.FuncDecl)
 			if ok {
 				if funcdecl.Name.Name == commentSpec.FunctionName {

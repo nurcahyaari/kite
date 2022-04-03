@@ -7,9 +7,6 @@ type TemplateBody string
 //go:embed package_template.tmpl
 var PackageTemplate TemplateBody
 
-//go:embed main.tmpl
-var MainTemplate TemplateBody
-
 //go:embed config.tmpl
 var ConfigTemplate TemplateBody
 
