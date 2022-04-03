@@ -572,7 +572,7 @@ func (a *AbstractCodeImpl) AddFunctionArgs(functionSpec FunctionSpec) {
 // }
 // TODO: should make the function more globaly
 func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDependencyInjection) {
-	a.file.Decls = append(a.file.Decls[:len(a.file.Decls)], a.file.Decls...)
+	a.file.Decls = append(a.file.Decls[:1], a.file.Decls...)
 
 	if wireDependency.InterfaceLib == "" && wireDependency.InterfaceName == "" &&
 		wireDependency.StructLib == "" && wireDependency.StructName == "" {

@@ -75,8 +75,9 @@ func (s *ModuleImpl) CreateNewModule() error {
 	}
 
 	moduleGen.CreateBaseHandlerDir()
-	err = moduleGen.CreateHandlerFile()
+	err = moduleGen.CreateHandlerBaseModuleFile()
 	if err != nil {
+		fmt.Println("H")
 		return err
 	}
 

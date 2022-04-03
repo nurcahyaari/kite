@@ -1,13 +1,14 @@
 package config
 
 import (
-	"github.com/nurcahyaari/kite/templates"
+	"github.com/nurcahyaari/kite/templates/configtemplate"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
 type EnvGen interface {
 	CreateEnvExampleFile() error
 	CreateEnvFile() error
+	AddConfigToEnv() error
 }
 
 type EnvGenImpl struct {
@@ -21,33 +22,29 @@ func NewEnvGen(projectPath string) EnvGen {
 }
 
 func (s *EnvGenImpl) CreateEnvExampleFile() error {
-	tmpl := templates.NewTemplate(templates.Template{
-		Template: templates.EnvTemplate,
-		Data: map[string]interface{}{
-			"DBDialeg": "mysql",
-		},
+	templateNew := configtemplate.NewEnvTemplate(configtemplate.EnvTemplateData{
+		DatabaseDialeg: "mysql",
 	})
-
-	templateString, err := tmpl.Render()
+	envTemplate, err := templateNew.Render()
 	if err != nil {
 		return err
 	}
 
-	return fs.CreateFileIfNotExist(s.ProjectPath, ".env.example", templateString)
+	return fs.CreateFileIfNotExist(s.ProjectPath, ".env.example", envTemplate)
 }
 
 func (s *EnvGenImpl) CreateEnvFile() error {
-	tmpl := templates.NewTemplate(templates.Template{
-		Template: templates.EnvTemplate,
-		Data: map[string]interface{}{
-			"DBDialeg": "mysql",
-		},
+	templateNew := configtemplate.NewEnvTemplate(configtemplate.EnvTemplateData{
+		DatabaseDialeg: "mysql",
 	})
-
-	templateString, err := tmpl.Render()
+	envTemplate, err := templateNew.Render()
 	if err != nil {
 		return err
 	}
 
-	return fs.CreateFileIfNotExist(s.ProjectPath, ".env", templateString)
+	return fs.CreateFileIfNotExist(s.ProjectPath, ".env", envTemplate)
+}
+
+func (s *EnvGenImpl) AddConfigToEnv() error {
+	return nil
 }

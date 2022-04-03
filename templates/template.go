@@ -5,7 +5,6 @@ import (
 	"bytes"
 	_ "embed"
 	"errors"
-	"fmt"
 	"text/template"
 )
 
@@ -36,10 +35,31 @@ func (s *TemplateNewImpl) AddTemplateFunction(name string, function interface{})
 }
 
 func (s *TemplateNewImpl) Render(templateLoc string, data interface{}) (string, error) {
+	template := ""
+	if s.PackageName != "" {
+		body, err := s.renderPackageTemplate()
+		if err != nil {
+			return "", err
+		}
+		template += "\n" + body
+	}
+	if templateLoc != "" {
+		body, err := s.renderBodyTemplate(templateLoc, data)
+		if err != nil {
+			return "", err
+		}
+		template += "\n" + body
+	}
+
+	return template, nil
+}
+
+func (s *TemplateNewImpl) renderPackageTemplate() (string, error) {
 	var packageTmplBuffer bytes.Buffer
-	var bodyTmplBuffer bytes.Buffer
+	var scanner *bufio.Scanner
+
 	packageTemplateByte := []byte(packageTemplate)
-	scanner := bufio.NewScanner(bytes.NewReader(packageTemplateByte))
+	scanner = bufio.NewScanner(bytes.NewReader(packageTemplateByte))
 
 	for scanner.Scan() {
 		row := scanner.Text()
@@ -61,6 +81,12 @@ func (s *TemplateNewImpl) Render(templateLoc string, data interface{}) (string, 
 	if err := packageTmpl.Execute(&packageTemplateBuf, packageTmplData); err != nil {
 		return "", err
 	}
+	return packageTemplateBuf.String(), nil
+}
+
+func (s *TemplateNewImpl) renderBodyTemplate(templateLoc string, data interface{}) (string, error) {
+	var bodyTmplBuffer bytes.Buffer
+	var scanner *bufio.Scanner
 
 	bodyByte := []byte(templateLoc)
 	scanner = bufio.NewScanner(bytes.NewReader(bodyByte))
@@ -83,8 +109,5 @@ func (s *TemplateNewImpl) Render(templateLoc string, data interface{}) (string, 
 		return "", err
 	}
 
-	return fmt.Sprintf("%s\n%s",
-		packageTemplateBuf.String(),
-		bodyTemplateBuf.String(),
-	), nil
+	return bodyTemplateBuf.String(), nil
 }

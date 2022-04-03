@@ -176,6 +176,11 @@ func (s AppImpl) CreateNewApp() error {
 		return err
 	}
 
+	err = moduleGen.CreateHandlerBaseFile()
+	if err != nil {
+		return err
+	}
+
 	moduleGen.CreateBaseModuleDir()
 
 	// create main file

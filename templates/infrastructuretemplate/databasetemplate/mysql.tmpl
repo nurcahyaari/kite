@@ -3,7 +3,6 @@ type MysqlImpl struct {
 	DB *sqlx.DB
 }
 
-// Load Mysql
 func NewMysqlClient() *MysqlImpl {
     log.Info().Msg("Initialize MySql connection")
 	var err error

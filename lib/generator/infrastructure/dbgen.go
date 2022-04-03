@@ -2,8 +2,10 @@ package infrastructure
 
 import (
 	"fmt"
+	"go/parser"
 
-	"github.com/nurcahyaari/kite/templates"
+	"github.com/nurcahyaari/kite/lib/ast"
+	"github.com/nurcahyaari/kite/templates/infrastructuretemplate/databasetemplate"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
@@ -12,6 +14,28 @@ type DbType int
 const (
 	DbMysql DbType = iota
 )
+
+const (
+	MysqlCode string = "mysql"
+)
+
+func (s DbType) ToDatabaseTemplateType() databasetemplate.DatabaseType {
+	var dbType databasetemplate.DatabaseType
+	switch s {
+	case DbMysql:
+		dbType = databasetemplate.DatabaseMysql
+	}
+	return dbType
+}
+
+func (s DbType) ToString() string {
+	var dbType string
+	switch s {
+	case DbMysql:
+		dbType = MysqlCode
+	}
+	return dbType
+}
 
 type DatabaseGen interface {
 	CreateMysqlConnection() error
@@ -29,47 +53,42 @@ func NewDatabaseGen(dbGenImpl DatabaseGenImpl) *DatabaseGenImpl {
 }
 
 func (s *DatabaseGenImpl) CreateMysqlConnection() error {
-	connectionTemplate := `
-	dbHost := config.Get().DB.Mysql.Host
-	dbPort := config.Get().DB.Mysql.Port
-	dbName := config.Get().DB.Mysql.Name
-	dbUser := config.Get().DB.Mysql.User
-	dbPass := config.Get().DB.Mysql.Pass
-
-	sHost := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
-	`
-	tmpl := templates.NewTemplate(templates.Template{
-		PackageName: "infrastructure",
-		Template:    templates.DBTemplate,
-		Import: []templates.ImportedPackage{
-			{
-				FilePath: "fmt",
-			},
-			{
-				FilePath: fmt.Sprintf("%s/config", s.GomodName),
-			},
-			{
-				FilePath: "github.com/go-sql-driver/mysql",
-				Alias:    "_",
-			},
-			{
-				FilePath: "github.com/jmoiron/sqlx",
-			},
-			{
-				FilePath: "github.com/rs/zerolog/log",
-			},
-		},
-		Data: map[string]interface{}{
-			"AppName":            s.AppName,
-			"ConnectionTemplate": connectionTemplate,
-			"DBDialeg":           "mysql",
-		},
+	templateNew := databasetemplate.NewDatabaseTemplate(databasetemplate.DatabaseTemplateData{
+		DatabaseType: s.DatabaseType.ToDatabaseTemplateType(),
 	})
-
-	templateString, err := tmpl.Render()
+	databaseTemplate, err := templateNew.Render()
 	if err != nil {
 		return err
 	}
 
-	return fs.CreateFileIfNotExist(s.InfrastructurePath, "mysql.go", templateString)
+	databaseAbstractCode := ast.NewAbstractCode(databaseTemplate, parser.ParseComments)
+	databaseAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"fmt\"",
+	})
+	databaseAbstractCode.AddImport(ast.ImportSpec{
+		Path: fmt.Sprintf("\"%s/config\"", s.GomodName),
+	})
+	databaseAbstractCode.AddImport(ast.ImportSpec{
+		Name: "_",
+		Path: "\"github.com/go-sql-driver/mysql\"",
+	})
+	databaseAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"github.com/jmoiron/sqlx\"",
+	})
+	databaseAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"github.com/rs/zerolog/log\"",
+	})
+
+	err = databaseAbstractCode.RebuildCode()
+	if err != nil {
+		return err
+	}
+	// get the manipulate code
+	databaseCode := databaseAbstractCode.GetCode()
+
+	return fs.CreateFileIfNotExist(
+		s.InfrastructurePath,
+		fmt.Sprintf("%s.go", s.DatabaseType.ToString()),
+		databaseCode,
+	)
 }

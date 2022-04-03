@@ -2,8 +2,10 @@ package handler
 
 import (
 	"fmt"
+	"go/parser"
 	"strings"
 
+	"github.com/nurcahyaari/kite/lib/ast"
 	"github.com/nurcahyaari/kite/lib/generator/protocol"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
@@ -12,6 +14,7 @@ import (
 type HttpHandlerGen interface {
 	CreateHttpHandlerBaseDir() error
 	CreateHttpHandlerBaseFile() error
+	CreateHttpHandlerBaseModuleFile() error
 }
 
 type HttpHandlerGenImpl struct {
@@ -39,32 +42,34 @@ func (s *HttpHandlerGenImpl) CreateHttpHandlerBaseDir() error {
 }
 
 func (s *HttpHandlerGenImpl) CreateHttpHandlerBaseFile() error {
-	var tmplBaseFile templates.Template
-	var tmplModuleHandlerFile templates.Template
-
-	tmplBaseFile = s.createbaseModuleHttpFile()
-	tmplModuleHandlerFile = s.createModuleHttpFile()
-
+	// var tmplBaseFile templates.Template
+	tmplBaseFile := s.createbaseModuleHttpFile()
 	templateBaseFileString, err := tmplBaseFile.Render()
 	if err != nil {
 		return err
 	}
+
+	baseHandlerFile := fmt.Sprintf("%s_handler.go", protocol.Http.ToString())
+	if !fs.IsFileExist(fs.ConcatDirPath(s.HandlerPath, baseHandlerFile)) {
+		fs.CreateFileIfNotExist(s.HandlerPath, baseHandlerFile, templateBaseFileString)
+	}
+	return nil
+}
+
+func (s *HttpHandlerGenImpl) CreateHttpHandlerBaseModuleFile() error {
+	baseHandlerFile := fmt.Sprintf("%s_handler.go", protocol.Http.ToString())
+	// var tmplModuleHandlerFile templates.Template
+	tmplModuleHandlerFile := s.createModuleHttpFile()
 
 	templateModuleHandlerFileString, err := tmplModuleHandlerFile.Render()
 	if err != nil {
 		return err
 	}
 
-	baseHandlerFile := fmt.Sprintf("%s_handler.go", protocol.Http.ToString())
-
-	if !fs.IsFileExist(fs.ConcatDirPath(s.HandlerPath, baseHandlerFile)) {
-		fs.CreateFileIfNotExist(s.HandlerPath, baseHandlerFile, templateBaseFileString)
-	}
-
 	if !fs.IsFileExist(fs.ConcatDirPath(s.HandlerPath, fmt.Sprintf("%s.go", s.ModuleName))) {
 		fs.CreateFileIfNotExist(s.HandlerPath, fmt.Sprintf("%s.go", s.ModuleName), templateModuleHandlerFileString)
 	}
-	err = s.appendModuleHandlerIntoMainHandler(fs.ConcatDirPath(s.HandlerPath, baseHandlerFile))
+	err = s.appendModuleHandlerIntoBaseHandler(fs.ConcatDirPath(s.HandlerPath, baseHandlerFile))
 	if err != nil {
 		return err
 	}
@@ -105,76 +110,54 @@ func (s *HttpHandlerGenImpl) createModuleHttpFile() templates.Template {
 	return tmpl
 }
 
-func (s *HttpHandlerGenImpl) appendModuleHandlerIntoMainHandler(handlerFilePath string) error {
+func (s *HttpHandlerGenImpl) appendModuleHandlerIntoBaseHandler(handlerFilePath string) error {
 	servicePath := fmt.Sprintf("%s/src/module/%s/service", s.GomodName, s.ModuleName)
 	val, err := fs.ReadFile(handlerFilePath)
 	if err != nil {
 		return err
 	}
-
-	importedPackages := fs.ReadImportedPackages(val)
-	dependencyInjected := fs.ReadStructWithObject(val)
-	methodList := fs.ReadInterfaceWithMethod(val)
-	methodImplList := fs.ReadMethodImpl(val)
-
-	newImport := []templates.ImportedPackage{}
-	for _, i := range importedPackages {
-		newImport = append(newImport, templates.ImportedPackage{
-			Alias:    i.Alias,
-			FilePath: i.FilePath,
-		})
-	}
-
-	newFuncParam := []templates.DependencyFuncParam{}
-	for _, d := range dependencyInjected {
-		newFuncParam = append(newFuncParam, templates.DependencyFuncParam{
-			ParamName:     d.ObjectName,
-			ParamDataType: d.ObjectDataType,
-		})
-	}
-
-	dependencyMethods := []templates.DependencyMethod{}
-	for _, d := range methodList {
-		dependencyMethods = append(dependencyMethods, templates.DependencyMethod{
-			Method:     d.Method,
-			MethodImpl: "",
-		})
-	}
-
-	for i, _ := range methodImplList {
-		dependencyMethods[i].MethodImpl = methodImplList[i]
-	}
-
 	importAlias := fmt.Sprintf("%ssvc", s.ModuleName)
-	newImport = append(newImport, templates.ImportedPackage{
-		Alias:    importAlias,
-		FilePath: servicePath,
-	})
-	newFuncParam = append(newFuncParam, templates.DependencyFuncParam{
-		ParamName:     fmt.Sprintf("%sSvc", s.ModuleName),
-		ParamDataType: fmt.Sprintf("%s.%sService", importAlias, strings.Title(s.ModuleName)),
-	})
 
-	tmpl := templates.NewTemplate(templates.Template{
-		PackageName:  protocol.Http.ToString(),
-		Import:       newImport,
-		IsDependency: true,
-		Dependency: templates.Dependency{
-			HaveInterface:    true,
-			DependencyName:   fmt.Sprintf("%sHandler", strings.Title(protocol.Http.ToString())),
-			FuncParams:       newFuncParam,
-			DependencyMethod: dependencyMethods,
+	abstractCode := ast.NewAbstractCode(val, parser.ParseComments)
+	abstractCode.AddImport(ast.ImportSpec{
+		Name: importAlias,
+		Path: fmt.Sprintf("\"%s\"", servicePath),
+	})
+	abstractCode.AddFunctionArgs(ast.FunctionSpec{
+		Name: "NewHttpHandler",
+		Args: ast.FunctionArgList{
+			&ast.FunctionArg{
+				Name:     fmt.Sprintf("%sSvc", s.ModuleName),
+				LibName:  importAlias,
+				DataType: fmt.Sprintf("%sService", strings.Title(s.ModuleName)),
+			},
 		},
 	})
-
-	template, err := tmpl.Render()
+	abstractCode.AddStructVarDecl(ast.StructArgList{
+		&ast.StructArg{
+			StructName: "HttpHandlerImpl",
+			DataType: ast.StructDtypes{
+				LibName:  importAlias,
+				TypeName: fmt.Sprintf("%sService", strings.Title(s.ModuleName)),
+			},
+			IsPointer: false,
+		},
+	})
+	abstractCode.AddFunctionArgsToReturn(ast.FunctionReturnArgsSpec{
+		FuncName:      "NewHttpHandler",
+		ReturnName:    "HttpHandlerImpl",
+		DataTypeKey:   fmt.Sprintf("%sService", strings.Title(s.ModuleName)),
+		DataTypeValue: fmt.Sprintf("%sSvc", s.ModuleName),
+	})
+	err = abstractCode.RebuildCode()
 	if err != nil {
 		return err
 	}
+	newCode := abstractCode.GetCode()
 
 	baseHandlerFile := fmt.Sprintf("%s_handler.go", protocol.ProtocolHttp)
 
-	fs.ReplaceFile(s.HandlerPath, baseHandlerFile, template)
+	fs.ReplaceFile(s.HandlerPath, baseHandlerFile, newCode)
 
 	return nil
 }

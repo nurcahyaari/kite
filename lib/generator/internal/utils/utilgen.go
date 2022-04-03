@@ -2,8 +2,10 @@ package utils
 
 import (
 	"fmt"
+	"go/parser"
 
-	"github.com/nurcahyaari/kite/templates"
+	"github.com/nurcahyaari/kite/lib/ast"
+	"github.com/nurcahyaari/kite/templates/internaltemplate/utilstemplate/encryptiontemplate"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
@@ -41,36 +43,33 @@ func (s *UtilGenImpl) CreateRsaReader() error {
 	// no need to check if error, because we still need to continue the proses
 	fs.CreateFolderIsNotExist(path)
 
-	// then creating the file
-	rsaTemplateData := map[string]interface{}{
-		"ReadPublicKey":  templates.ReadPublicKeyTemplate,
-		"ReadPrivateKey": templates.ReadPrivateKeyTemplate,
-	}
-
-	tmpl := templates.NewTemplate(templates.Template{
-		PackageName: "encryption",
-		Template:    templates.RSABaseTemplate,
-		Import: []templates.ImportedPackage{
-			{
-				FilePath: "crypto/rsa",
-			},
-			{
-				FilePath: "crypto/x509",
-			},
-			{
-				FilePath: "encoding/pem",
-			},
-			{
-				FilePath: "errors",
-			},
-		},
-		Data: rsaTemplateData,
-	})
-
-	templateString, err := tmpl.Render()
+	templateNew := encryptiontemplate.NewRsaTemplate()
+	rsaReaderTemplate, err := templateNew.Render()
 	if err != nil {
 		return err
 	}
 
-	return fs.CreateFileIfNotExist(path, "rsa.go", templateString)
+	rsaReaderAbstractCode := ast.NewAbstractCode(rsaReaderTemplate, parser.ParseComments)
+	rsaReaderAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"crypto/rsa\"",
+	})
+	rsaReaderAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"crypto/x509\"",
+	})
+	rsaReaderAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"encoding/pem\"",
+	})
+	rsaReaderAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"errors\"",
+	})
+
+	// after manipulate the code, rebuild the code
+	err = rsaReaderAbstractCode.RebuildCode()
+	if err != nil {
+		return err
+	}
+	// get the manipulate code
+	rsaRaderCode := rsaReaderAbstractCode.GetCode()
+
+	return fs.CreateFileIfNotExist(path, "rsa.go", rsaRaderCode)
 }

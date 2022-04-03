@@ -7,7 +7,8 @@ import (
 
 type HandlerGen interface {
 	CreateBaseHandlerDir() error
-	CreateHandlerFile() error
+	CreateHandlerBaseFile() error
+	CreateHandlerBaseModuleFile() error
 	handler.HttpHandlerGen
 }
 
@@ -35,7 +36,11 @@ func (s *HandlerGenImpl) CreateBaseHandlerDir() error {
 	return nil
 }
 
-func (s *HandlerGenImpl) CreateHandlerFile() error {
+func (s *HandlerGenImpl) CreateHandlerBaseFile() error {
 	s.CreateHttpHandlerBaseDir()
 	return s.CreateHttpHandlerBaseFile()
+}
+
+func (s *HandlerGenImpl) CreateHandlerBaseModuleFile() error {
+	return s.CreateHttpHandlerBaseModuleFile()
 }
