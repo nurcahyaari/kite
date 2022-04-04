@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"go/parser"
-	"strings"
 
 	"github.com/nurcahyaari/kite/lib/ast"
 	"github.com/nurcahyaari/kite/lib/generator/protocol"
@@ -175,16 +174,17 @@ func (s *HttpHandlerGenImpl) appendModuleHandlerIntoBaseHandler(handlerFilePath 
 			&ast.FunctionArg{
 				Name:     fmt.Sprintf("%sSvc", s.ModuleName),
 				LibName:  importAlias,
-				DataType: fmt.Sprintf("%sService", strings.Title(s.ModuleName)),
+				DataType: "ServiceImpl",
 			},
 		},
 	})
 	abstractCode.AddStructVarDecl(ast.StructArgList{
 		&ast.StructArg{
 			StructName: "HttpHandlerImpl",
+			Name:       fmt.Sprintf("%sSvc", s.ModuleName),
 			DataType: ast.StructDtypes{
 				LibName:  importAlias,
-				TypeName: fmt.Sprintf("%sService", strings.Title(s.ModuleName)),
+				TypeName: "ServiceImpl",
 			},
 			IsPointer: false,
 		},
@@ -192,7 +192,7 @@ func (s *HttpHandlerGenImpl) appendModuleHandlerIntoBaseHandler(handlerFilePath 
 	abstractCode.AddFunctionArgsToReturn(ast.FunctionReturnArgsSpec{
 		FuncName:      "NewHttpHandler",
 		ReturnName:    "HttpHandlerImpl",
-		DataTypeKey:   fmt.Sprintf("%sService", strings.Title(s.ModuleName)),
+		DataTypeKey:   fmt.Sprintf("%sSvc", s.ModuleName),
 		DataTypeValue: fmt.Sprintf("%sSvc", s.ModuleName),
 	})
 	err = abstractCode.RebuildCode()

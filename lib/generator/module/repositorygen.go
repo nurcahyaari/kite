@@ -2,8 +2,9 @@ package module
 
 import (
 	"fmt"
-	"strings"
+	"go/parser"
 
+	"github.com/nurcahyaari/kite/lib/ast"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
@@ -38,33 +39,72 @@ func (s *RepositoryGenImpl) CreateRepositoryDir() error {
 }
 
 func (s *RepositoryGenImpl) CreateRepositoryFile() error {
-	tmpl := templates.NewTemplate(templates.Template{
-		PackageName: "repository",
-		Import: []templates.ImportedPackage{
-			{
-				FilePath: fs.ConcatDirPath(s.GomodName, "infrastructure"),
-			},
-		},
-		IsDependency: true,
-		Dependency: templates.Dependency{
-			HaveInterface:  true,
-			DependencyName: fmt.Sprintf("%sRepository", strings.Title(s.ModuleName)),
-			FuncParams: []templates.DependencyFuncParam{
-				{
-					ParamName:     "db",
-					ParamDataType: "*infrastructure.MysqlImpl",
-				},
-			},
-			DependencyMethod: []templates.DependencyMethod{},
-		},
-	})
-
-	templateString, err := tmpl.Render()
+	templateNew := templates.NewTemplateNewImpl("repository", "")
+	templateCode, err := templateNew.Render("", nil)
 	if err != nil {
 		return err
 	}
 
-	err = fs.CreateFileIfNotExist(s.RepositoryPath, "repository.go", templateString)
+	abstractCode := ast.NewAbstractCode(templateCode, parser.ParseComments)
+	abstractCode.AddFunction(ast.FunctionSpecList{
+		&ast.FunctionSpec{
+			Name: "NewRepository",
+			Args: ast.FunctionArgList{
+				&ast.FunctionArg{
+					IsPointer: true,
+					Name:      "db",
+					LibName:   "infrastructure",
+					DataType:  "MysqlImpl",
+				},
+			},
+			Returns: &ast.FunctionReturnSpecList{
+				&ast.FunctionReturnSpec{
+					IsPointer: true,
+					IsStruct:  true,
+					DataType:  "RepositoryImpl",
+					Return:    "RepositoryImpl",
+				},
+			},
+		},
+	})
+	abstractCode.AddFunctionArgsToReturn(ast.FunctionReturnArgsSpec{
+		FuncName:      "NewRepository",
+		ReturnName:    "RepositoryImpl",
+		DataTypeKey:   "db",
+		DataTypeValue: "db",
+	})
+	abstractCode.AddStructs(ast.StructSpecList{
+		&ast.StructSpec{
+			Name: "RepositoryImpl",
+		},
+	})
+	abstractCode.AddStructVarDecl(ast.StructArgList{
+		&ast.StructArg{
+			StructName: "RepositoryImpl",
+			IsPointer:  true,
+			Name:       "db",
+			DataType: ast.StructDtypes{
+				LibName:  "infrastructure",
+				TypeName: "MysqlImpl",
+			},
+		},
+	})
+	abstractCode.AddInterfaces(ast.InterfaceSpecList{
+		&ast.InterfaceSpec{
+			Name:       "Repository",
+			StructName: "RepositoryImpl",
+		},
+	})
+	abstractCode.AddImport(ast.ImportSpec{
+		Path: fmt.Sprintf("\"%s\"", fs.ConcatDirPath(s.GomodName, "infrastructure")),
+	})
+	err = abstractCode.RebuildCode()
+	if err != nil {
+		return err
+	}
+	templateBaseFileString := abstractCode.GetCode()
+
+	err = fs.CreateFileIfNotExist(s.RepositoryPath, "repository.go", templateBaseFileString)
 	if err != nil {
 		return err
 	}

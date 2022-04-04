@@ -2,8 +2,9 @@ package module
 
 import (
 	"fmt"
-	"strings"
+	"go/parser"
 
+	"github.com/nurcahyaari/kite/lib/ast"
 	"github.com/nurcahyaari/kite/templates"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
@@ -38,34 +39,73 @@ func (s *ServiceGenImpl) CreateServiceDir() error {
 }
 
 func (s *ServiceGenImpl) CreateServiceFile() error {
-	tmpl := templates.NewTemplate(templates.Template{
-		PackageName:  "service",
-		IsDependency: true,
-		Import: []templates.ImportedPackage{
-			{
-				Alias:    fmt.Sprintf("%srepo", strings.ToLower(s.ModuleName)),
-				FilePath: fmt.Sprintf("%s/src/module/%s/repository", s.GomodName, s.ModuleName),
-			},
-		},
-		Dependency: templates.Dependency{
-			HaveInterface:  true,
-			DependencyName: fmt.Sprintf("%sService", strings.Title(s.ModuleName)),
-			FuncParams: []templates.DependencyFuncParam{
-				{
-					ParamName:     fmt.Sprintf("%sRepo", strings.Title(s.ModuleName)),
-					ParamDataType: fmt.Sprintf("%srepo.%sRepository", strings.ToLower(s.ModuleName), strings.Title(s.ModuleName)),
-				},
-			},
-			DependencyMethod: []templates.DependencyMethod{},
-		},
-	})
-
-	templateString, err := tmpl.Render()
+	templateNew := templates.NewTemplateNewImpl("repository", "")
+	templateCode, err := templateNew.Render("", nil)
 	if err != nil {
 		return err
 	}
 
-	err = fs.CreateFileIfNotExist(s.ServicePath, "service.go", templateString)
+	abstractCode := ast.NewAbstractCode(templateCode, parser.ParseComments)
+	abstractCode.AddFunction(ast.FunctionSpecList{
+		&ast.FunctionSpec{
+			Name: "NewService",
+			Args: ast.FunctionArgList{
+				&ast.FunctionArg{
+					IsPointer: true,
+					Name:      fmt.Sprintf("%sRepo", s.ModuleName),
+					LibName:   fmt.Sprintf("%srepo", s.ModuleName),
+					DataType:  "RepositoryImpl",
+				},
+			},
+			Returns: &ast.FunctionReturnSpecList{
+				&ast.FunctionReturnSpec{
+					IsPointer: true,
+					IsStruct:  true,
+					DataType:  "ServiceImpl",
+					Return:    "ServiceImpl",
+				},
+			},
+		},
+	})
+	abstractCode.AddFunctionArgsToReturn(ast.FunctionReturnArgsSpec{
+		FuncName:      "NewService",
+		ReturnName:    "ServiceImpl",
+		DataTypeKey:   fmt.Sprintf("%sRepo", s.ModuleName),
+		DataTypeValue: fmt.Sprintf("%sRepo", s.ModuleName),
+	})
+	abstractCode.AddStructs(ast.StructSpecList{
+		&ast.StructSpec{
+			Name: "ServiceImpl",
+		},
+	})
+	abstractCode.AddStructVarDecl(ast.StructArgList{
+		&ast.StructArg{
+			StructName: "ServiceImpl",
+			IsPointer:  true,
+			Name:       fmt.Sprintf("%sRepo", s.ModuleName),
+			DataType: ast.StructDtypes{
+				LibName:  fmt.Sprintf("%srepo", s.ModuleName),
+				TypeName: "RepositoryImpl",
+			},
+		},
+	})
+	abstractCode.AddInterfaces(ast.InterfaceSpecList{
+		&ast.InterfaceSpec{
+			Name:       "Service",
+			StructName: "ServiceImpl",
+		},
+	})
+	abstractCode.AddImport(ast.ImportSpec{
+		Name: fmt.Sprintf("%srepo", s.ModuleName),
+		Path: fmt.Sprintf("\"%s/src/module/%s/repository\"", s.GomodName, s.ModuleName),
+	})
+	err = abstractCode.RebuildCode()
+	if err != nil {
+		return err
+	}
+	templateBaseFileString := abstractCode.GetCode()
+
+	err = fs.CreateFileIfNotExist(s.ServicePath, "service.go", templateBaseFileString)
 	if err != nil {
 		return err
 	}
