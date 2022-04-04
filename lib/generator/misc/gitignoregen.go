@@ -1,7 +1,7 @@
 package misc
 
 import (
-	"github.com/nurcahyaari/kite/templates"
+	"github.com/nurcahyaari/kite/templates/misctemplate"
 	"github.com/nurcahyaari/kite/utils/fs"
 )
 
@@ -20,14 +20,11 @@ func NewGitignore(projectPath string) GitIgnoreGen {
 }
 
 func (s GitIgnoreGenImpl) CreateGitignoreFiles() error {
-	tmpl := templates.NewTemplate(templates.Template{
-		Template: templates.GitignoreTemplate,
-	})
-
-	templateString, err := tmpl.Render()
+	templateNew := misctemplate.NewGitignoreTemplate()
+	gitignoreTemplate, err := templateNew.Render()
 	if err != nil {
 		return err
 	}
 
-	return fs.CreateFileIfNotExist(s.ProjectPath, ".gitignore", templateString)
+	return fs.CreateFileIfNotExist(s.ProjectPath, ".gitignore", gitignoreTemplate)
 }
