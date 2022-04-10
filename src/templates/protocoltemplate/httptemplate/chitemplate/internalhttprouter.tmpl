@@ -1,0 +1,10 @@
+func (h *HttpRouterImpl) cors(r *chi.Mux) {
+	r.Use(cors.AllowAll().Handler)
+}
+
+func (h *HttpRouterImpl) Router(r *chi.Mux) {
+	h.cors(r)
+	h.handler.Router(r)
+
+	r.Mount("/swagger", httpswagger.WrapHandler)
+}

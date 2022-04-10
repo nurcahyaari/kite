@@ -1,0 +1,11 @@
+func (p *HttpImpl) setupRouter(app *chi.Mux) {
+	p.HttpRouter.Router(app)
+}
+
+func (p *HttpImpl) Listen() {
+	app := chi.NewRouter()
+
+	p.setupRouter(app)
+
+	http.ListenAndServe(fmt.Sprintf(":%d", config.Get().Application.Port), app)
+}

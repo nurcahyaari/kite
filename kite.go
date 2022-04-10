@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nurcahyaari/kite/lib/generator"
+	"github.com/nurcahyaari/kite/src/generator"
 
-	"github.com/nurcahyaari/kite/utils/fs"
-	"github.com/nurcahyaari/kite/utils/logger"
+	"github.com/nurcahyaari/kite/src/utils/fs"
+	"github.com/nurcahyaari/kite/src/utils/logger"
 	cli "github.com/urfave/cli/v2"
 )
 
