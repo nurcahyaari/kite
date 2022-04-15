@@ -1,0 +1,28 @@
+// Wiring for data storage
+var storages = wire.NewSet(
+	infrastructure.NewMysqlClient,
+)
+
+// Wiring for http protocol
+var httpHandler = wire.NewSet(
+    httphandler.NewHttpHandler,
+	wire.Bind(
+		new(httphandler.HttpHandler),
+		new(*httphandler.HttpHandlerImpl),
+	),
+)
+
+// Wiring protocol routing
+var httpRouter = wire.NewSet(
+	httprouter.NewHttpRouter,
+)
+
+func InitHttpProtocol() *http.HttpImpl {
+	wire.Build(
+		storages,
+		httpHandler,
+		httpRouter,
+		http.NewHttp,
+	)
+	return &http.HttpImpl{}
+}

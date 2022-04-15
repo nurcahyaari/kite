@@ -3,15 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
-	"github.com/nurcahyaari/kite/lib/generator"
-	"github.com/nurcahyaari/kite/lib/generator/appmodule"
-	"github.com/nurcahyaari/kite/lib/impl"
+	"github.com/nurcahyaari/kite/src/generator"
 
-	"github.com/nurcahyaari/kite/utils"
-	"github.com/nurcahyaari/kite/utils/fs"
-	"github.com/nurcahyaari/kite/utils/logger"
+	"github.com/nurcahyaari/kite/src/utils/fs"
+	"github.com/nurcahyaari/kite/src/utils/logger"
 	cli "github.com/urfave/cli/v2"
 )
 
@@ -46,27 +42,17 @@ func main() {
 				},
 			},
 			Action: func(c *cli.Context) error {
-				var option impl.GeneratorOptions
-				var newAppOption generator.NewAppOption
-
-				option.GoModName = c.String("name")
+				gomodName := c.String("name")
 				if c.String("path") != "" {
-					path = c.String("path")
+					path = fmt.Sprintf("%s/", c.String("path"))
 				}
-				option.Path = path
-				option.ProjectPath = fs.ConcatDirPath(path, option.GoModName)
-				option.DefaultDBDialeg = "mysql"
 
-				splitPath := strings.Split(option.GoModName, "/")
-				option.AppName = utils.CapitalizeFirstLetter(splitPath[len(splitPath)-1])
+				appGenerator := generator.NewAppNew(generator.ProjectInfo{
+					GoModName:   gomodName,
+					ProjectPath: fs.ConcatDirPath(path, gomodName),
+				})
 
-				newAppOption.GeneratorOptions = option
-
-				newApp := generator.NewApp(newAppOption)
-				err := newApp.Run()
-				if err != nil {
-					logger.Errorln(err)
-				}
+				err = appGenerator.CreateNewApp()
 
 				return err
 			},
@@ -88,29 +74,17 @@ func main() {
 			},
 			Action: func(c *cli.Context) error {
 				var err error
-				var option impl.GeneratorOptions
-				var moduleOption appmodule.ModulesOption
-
 				if c.String("path") != "" {
-					path = c.String("path")
+					path = fmt.Sprintf("%s/", c.String("path"))
 				}
-				option.Path = fmt.Sprintf("%s/", path)
-				option.ProjectPath = fmt.Sprintf("%s/", path)
+				moduleName := c.String("name")
+				gomodName := fs.GetGoModName(path)
 
-				moduleOption.GeneratorOptions = option
-				moduleOption.IsModule = true
-				moduleOption.ModuleName = c.String("name")
-				if moduleOption.ModuleName == "" {
-					err = fmt.Errorf("module name cannot be empty")
-					logger.Errorln(err.Error())
-					return err
-				}
-
-				module := appmodule.NewModules(moduleOption)
-				err = module.Run()
-				if err != nil {
-					logger.Errorln(err)
-				}
+				moduleGen := generator.NewModule(moduleName, generator.ProjectInfo{
+					GoModName:   gomodName,
+					ProjectPath: path,
+				})
+				err = moduleGen.CreateNewModule()
 
 				return err
 			},
@@ -119,6 +93,6 @@ func main() {
 
 	err = app.Run(os.Args)
 	if err != nil {
-		fmt.Errorf("Error ", err)
+		fmt.Println(err)
 	}
 }
