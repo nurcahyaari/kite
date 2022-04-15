@@ -63,6 +63,19 @@ func (s AppImpl) CreateNewApp() error {
 		},
 	}
 
+	err = fs.Gitinit(s.Info.ProjectPath)
+	if err != nil {
+		logger.Warnln(err.Error())
+	}
+
+	// create gitignore
+	gitignoreGen := misc.NewGitignore(s.Info.ProjectPath)
+	gitignoreGen.CreateGitignoreFile()
+
+	// create makefile
+	makefileGen := misc.NewMakefile(s.Info.ProjectPath)
+	makefileGen.CreateMakefilefile()
+
 	// create go.mod
 	err = fs.GoModInit(s.Info.ProjectPath, s.Info.GoModName)
 	if err != nil {

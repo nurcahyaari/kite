@@ -6,7 +6,7 @@ import (
 )
 
 type GitIgnoreGen interface {
-	CreateGitignoreFiles() error
+	CreateGitignoreFile() error
 }
 
 type GitIgnoreGenImpl struct {
@@ -19,7 +19,7 @@ func NewGitignore(projectPath string) GitIgnoreGen {
 	}
 }
 
-func (s GitIgnoreGenImpl) CreateGitignoreFiles() error {
+func (s GitIgnoreGenImpl) CreateGitignoreFile() error {
 	templateNew := misctemplate.NewGitignoreTemplate()
 	gitignoreTemplate, err := templateNew.Render()
 	if err != nil {

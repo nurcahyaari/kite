@@ -96,7 +96,7 @@ func (s *RepositoryGenImpl) CreateRepositoryFile() error {
 		},
 	})
 	abstractCode.AddImport(ast.ImportSpec{
-		Path: fmt.Sprintf("\"%s\"", fs.ConcatDirPath(s.GomodName, "infrastructure")),
+		Path: fmt.Sprintf("\"%s\"", fs.ConcatDirPath(s.GomodName, "infrastructure", "database")),
 	})
 	err = abstractCode.RebuildCode()
 	if err != nil {

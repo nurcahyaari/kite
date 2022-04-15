@@ -20,9 +20,16 @@ func checkTemplateLocationIsExist(templateLocation string) bool {
 	return IsFolderExist(templateLocation)
 }
 
-func ConcatDirPath(basePath, newDir string) string {
-	basePath = ValidatePath(basePath)
-	return fmt.Sprintf("%s%s", basePath, newDir)
+func ConcatDirPath(dir ...string) string {
+	newPath := ""
+	for i, d := range dir {
+		path := d
+		if i+1 < len(dir) {
+			path = ValidatePath(d)
+		}
+		newPath = fmt.Sprintf("%s%s", newPath, path)
+	}
+	return newPath
 }
 
 // GetAppNameBasedOnGoMod will set the appname based on the go mod init
@@ -121,6 +128,16 @@ func GoFormat(path, goModName string) error {
 		return printErr(GoFmtErr)
 	}
 
+	return nil
+}
+
+func Gitinit(projectPath string) error {
+	logger.Infoln("Running gitinit")
+	os.Chdir(projectPath)
+	cmd := exec.Command("git", "init")
+	if err := cmd.Run(); err != nil {
+		return printErr(GitinitErr)
+	}
 	return nil
 }
 

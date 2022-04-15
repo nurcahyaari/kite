@@ -17,6 +17,7 @@ const (
 	FolderWasCreated     filesystemErr = "Folder already created"
 	GoFmtErr             filesystemErr = "Failed to run go fmt"
 	GoModInitErr         filesystemErr = "Failed to go mod init"
+	GitinitErr           filesystemErr = "Failed to run gitinit, maybe git isn't installed on your device"
 	MkdirErr             filesystemErr = "Failed to create a folder"
 	MkfileErr            filesystemErr = "Failed to create a file"
 )
