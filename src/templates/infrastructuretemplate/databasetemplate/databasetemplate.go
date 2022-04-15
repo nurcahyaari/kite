@@ -3,7 +3,7 @@ package databasetemplate
 import (
 	_ "embed"
 
-	"github.com/nurcahyaari/kite/templates"
+	"github.com/nurcahyaari/kite/src/templates"
 )
 
 type databaseTemplateLoc string

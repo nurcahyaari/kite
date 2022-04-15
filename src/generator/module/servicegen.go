@@ -5,8 +5,8 @@ import (
 	"go/parser"
 
 	"github.com/nurcahyaari/kite/src/ast"
+	"github.com/nurcahyaari/kite/src/templates"
 	"github.com/nurcahyaari/kite/src/utils/fs"
-	"github.com/nurcahyaari/kite/templates"
 )
 
 type ServiceGen interface {

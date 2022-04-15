@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/nurcahyaari/kite/src/utils"
 	"github.com/nurcahyaari/kite/src/utils/logger"
-	"github.com/nurcahyaari/kite/utils"
 	"golang.org/x/mod/modfile"
 )
 

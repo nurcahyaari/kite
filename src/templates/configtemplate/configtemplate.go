@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"strings"
 
-	"github.com/nurcahyaari/kite/templates"
+	"github.com/nurcahyaari/kite/src/templates"
 )
 
 //go:embed config.tmpl
