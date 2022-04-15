@@ -11,6 +11,7 @@ import (
 
 type WireGen interface {
 	CreateWireFiles() error
+	AddDependencyAfterCreatingModule(importSpec ast.ImportSpec, dependency ast.WireDependencyInjection) error
 }
 
 type WireGenImpl struct {
@@ -160,6 +161,12 @@ func (s WireGenImpl) CreateWireFiles() error {
 						Name: "httpRouter",
 					},
 				},
+				&ast.CallerArg{
+					SelectorStmt: &ast.CallerArgSelectorStmt{
+						LibName:  "http",
+						DataType: "NewHttp",
+					},
+				},
 			},
 		},
 	)
@@ -170,4 +177,47 @@ func (s WireGenImpl) CreateWireFiles() error {
 	templateCode = abstractCode.GetCode()
 
 	return fs.CreateFileIfNotExist(s.ProjectPath, "wire.go", templateCode)
+}
+
+func (s WireGenImpl) AddDependencyAfterCreatingModule(importSpec ast.ImportSpec, dependency ast.WireDependencyInjection) error {
+	wirePath := fs.ConcatDirPath(s.ProjectPath, "wire.go")
+	val, err := fs.ReadFile(wirePath)
+	if err != nil {
+		return err
+	}
+
+	abstractCode := ast.NewAbstractCode(val, parser.ParseComments)
+	abstractCode.AddWireDependencyInjection(dependency)
+	abstractCode.AddArgsToCallExpr(
+		ast.CallerSpec{
+			Func: ast.CallerFunc{
+				Name: ast.CallerSelecterExpr{
+					Name: "wire",
+				},
+				Selector: "Build",
+			},
+			Args: ast.CallerArgList{
+				&ast.CallerArg{
+					Ident: &ast.CallerArgIdent{
+						Name: dependency.VarName,
+					},
+				},
+			},
+		},
+	)
+	err = abstractCode.RebuildCode()
+	if err != nil {
+		return err
+	}
+	astCode := abstractCode.GetCode()
+
+	abstractCode = ast.NewAbstractCode(astCode, parser.ParseComments)
+	abstractCode.AddImport(importSpec)
+	err = abstractCode.RebuildCode()
+	if err != nil {
+		return err
+	}
+	astCode = abstractCode.GetCode()
+
+	return fs.ReplaceFile(s.ProjectPath, "wire.go", astCode)
 }

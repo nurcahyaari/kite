@@ -40,7 +40,7 @@ type DatabaseTemplateImpl struct {
 }
 
 func NewDatabaseTemplate(data DatabaseTemplateData) DatabaseTemplate {
-	template := templates.NewTemplateNewImpl("infrastructure", data.DatabaseType.GetDatabaseTemplate())
+	template := templates.NewTemplateNewImpl("database", data.DatabaseType.GetDatabaseTemplate())
 	return &DatabaseTemplateImpl{
 		TemplateNewImpl: template,
 		Data:            data,

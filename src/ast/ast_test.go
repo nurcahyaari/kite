@@ -1,10 +1,10 @@
 package ast_test
 
 import (
-	"fmt"
 	"go/parser"
 	"testing"
 
+	"github.com/nurcahyaari/kite/src/ast"
 	libast "github.com/nurcahyaari/kite/src/ast"
 	"github.com/stretchr/testify/assert"
 )
@@ -2246,12 +2246,11 @@ func InitHttpProtocol() *http.HttpImpl {
 	return &http.HttpImpl{}
 }
 `
-		fmt.Println(act)
 		assert.Equal(t, exp, act)
 	})
 
 	t.Run("Test add wire dependency injection 2", func(t *testing.T) {
-		code := `
+		code := `//+build wireinject
 		package test
 		`
 
@@ -2326,7 +2325,8 @@ func InitHttpProtocol() *http.HttpImpl {
 		// don't touch the expected code please
 		// expect you change the test case please :D
 		// building this string obviously difficult
-		exp := `package test
+		exp := `//+build wireinject
+package test
 
 var productSvc = wire.NewSet(productsvc.NewProductService, wire.Bind(new(productsvc.ProductService), new(*productsvc.ProductServiceImpl)))
 
@@ -2335,7 +2335,6 @@ func InitHttpProtocol() *http.HttpImpl {
 	return &http.HttpImpl{}
 }
 `
-		fmt.Println(act)
 		assert.Equal(t, exp, act)
 	})
 
@@ -2420,7 +2419,6 @@ func InitHttpProtocol() *http.HttpImpl {
 	return &http.HttpImpl{}
 }
 `
-		fmt.Println(act)
 		assert.Equal(t, exp, act)
 	})
 
@@ -2540,9 +2538,101 @@ func InitHttpProtocol() *http.HttpImpl {
 	return &http.HttpImpl{}
 }
 `
-		fmt.Println(act)
 		assert.Equal(t, exp, act)
 	})
+
+	t.Run("Test add wire dependency injection 5", func(t *testing.T) {
+		code := `//+build wireinject
+package main
+
+import (
+	db "test/infrastructure/database"
+	"test/internal/protocol/http"
+	httprouter "test/internal/protocol/http/router"
+	httphandler "test/src/handler/http"
+
+	"github.com/google/wire"
+)
+
+var storages = wire.NewSet(db.NewMysqlClient)
+
+var httpHandler = wire.NewSet(httphandler.NewHttpHandler)
+
+var httpRouter = wire.NewSet(httprouter.NewHttpRouter)
+
+func InitHttpProtocol() *http.HttpImpl {
+	wire.Build(storages, httpHandler, httpRouter, http.NewHttp)
+	return &http.HttpImpl{}
+}
+
+		`
+
+		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
+		abstractCode.AddWireDependencyInjection(
+			libast.WireDependencyInjection{
+				VarName:                   "productSvc",
+				TargetInjectName:          "productsvc",
+				TargetInjectConstructName: "NewProductService",
+				InterfaceLib:              "productsvc",
+				InterfaceName:             "ProductService",
+				StructLib:                 "productsvc",
+				StructName:                "ProductServiceImpl",
+			},
+		)
+		abstractCode.AddArgsToCallExpr(
+			ast.CallerSpec{
+				Func: ast.CallerFunc{
+					Name: ast.CallerSelecterExpr{
+						Name: "wire",
+					},
+					Selector: "Build",
+				},
+				Args: ast.CallerArgList{
+					&ast.CallerArg{
+						Ident: &ast.CallerArgIdent{
+							Name: "productSvc",
+						},
+					},
+				},
+			},
+		)
+
+		err := abstractCode.RebuildCode()
+		assert.NoError(t, err)
+		act := abstractCode.GetCode()
+		// don't touch the expected code please
+		// expect you change the test case please :D
+		// building this string obviously difficult
+		exp := `//+build wireinject
+package main
+
+import (
+	db "test/infrastructure/database"
+	"test/internal/protocol/http"
+	httprouter "test/internal/protocol/http/router"
+	httphandler "test/src/handler/http"
+
+	"github.com/google/wire"
+)
+
+var productSvc = wire.NewSet(productsvc.NewProductService, wire.Bind(new(productsvc.ProductService), new(*productsvc.ProductServiceImpl)))
+
+var storages = wire.NewSet(db.NewMysqlClient)
+
+var httpHandler = wire.NewSet(httphandler.NewHttpHandler)
+
+var httpRouter = wire.NewSet(httprouter.NewHttpRouter)
+
+func InitHttpProtocol() *http.HttpImpl {
+	wire.Build(storages, httpHandler, httpRouter, http.NewHttp, productSvc)
+	return &http.HttpImpl{}
+}
+		
+`
+
+		assert.Equal(t, exp, act)
+	})
+
 }
 
 func TestAddCommentBeforeFunction(t *testing.T) {
@@ -2565,6 +2655,7 @@ func TestAddCommentBeforeFunction(t *testing.T) {
 		// expect you change the test case please :D
 		// building this string obviously difficult
 		exp := `//go:generate go run github.com/google/wire/cmd/wire
+
 package test
 
 func main()	{}

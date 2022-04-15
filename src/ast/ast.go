@@ -611,9 +611,19 @@ func (a *AbstractCodeImpl) AddFunctionArgs(functionSpec FunctionSpec) {
 func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDependencyInjection) {
 	a.file.Decls = append(a.file.Decls[:1], a.file.Decls...)
 
+	idx := 0
+	if len(a.file.Decls) > 1 {
+		stmt, ok := a.file.Decls[0].(*ast.GenDecl)
+		if ok {
+			if stmt.Tok == token.IMPORT {
+				idx += 1
+			}
+		}
+	}
+
 	if wireDependency.InterfaceLib == "" && wireDependency.InterfaceName == "" &&
 		wireDependency.StructLib == "" && wireDependency.StructName == "" {
-		a.file.Decls[0] = &ast.GenDecl{
+		a.file.Decls[idx] = &ast.GenDecl{
 			Tok: token.VAR,
 			Specs: []ast.Spec{
 				&ast.ValueSpec{
@@ -644,7 +654,7 @@ func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDepende
 			},
 		}
 	} else {
-		a.file.Decls[0] = &ast.GenDecl{
+		a.file.Decls[idx] = &ast.GenDecl{
 			Tok: token.VAR,
 			Specs: []ast.Spec{
 				&ast.ValueSpec{
@@ -885,7 +895,7 @@ func (a *AbstractCodeImpl) AddCommentOutsideFunction(commentSpec Comment) {
 				}
 			}
 		} else {
-			// add comment after import
+			// add comment before import
 			astfile, ok := n.(*ast.File)
 			if ok {
 				if len(astfile.Comments) == 0 {
@@ -897,6 +907,7 @@ func (a *AbstractCodeImpl) AddCommentOutsideFunction(commentSpec Comment) {
 							},
 						},
 					})
+					astfile.Name.NamePos = token.Pos(a.fset.Position(astfile.Package).Column)
 				} else {
 					astfile.Comments = append(astfile.Comments[:1], astfile.Comments...)
 					astfile.Comments[0] = &ast.CommentGroup{
@@ -907,7 +918,7 @@ func (a *AbstractCodeImpl) AddCommentOutsideFunction(commentSpec Comment) {
 							},
 						},
 					}
-					astfile.Name.NamePos += 2
+					astfile.Name.NamePos += token.Pos(2)
 				}
 			}
 		}

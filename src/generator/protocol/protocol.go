@@ -399,12 +399,6 @@ func (s *ProtocolGenImpl) createProtocolInternalHttpFile(path string) error {
 		DataTypeKey:   "HttpRouter",
 		DataTypeValue: "httpRouter",
 	})
-	abstractCode.AddInterfaces(ast.InterfaceSpecList{
-		&ast.InterfaceSpec{
-			Name:       "Http",
-			StructName: "HttpImpl",
-		},
-	})
 	abstractCode.AddStructs(ast.StructSpecList{
 		&ast.StructSpec{
 			Name: "HttpImpl",

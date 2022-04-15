@@ -51,10 +51,9 @@ func (s *ServiceGenImpl) CreateServiceFile() error {
 			Name: "NewService",
 			Args: ast.FunctionArgList{
 				&ast.FunctionArg{
-					IsPointer: true,
-					Name:      fmt.Sprintf("%sRepo", s.ModuleName),
-					LibName:   fmt.Sprintf("%srepo", s.ModuleName),
-					DataType:  "RepositoryImpl",
+					Name:     fmt.Sprintf("%sRepo", s.ModuleName),
+					LibName:  fmt.Sprintf("%srepo", s.ModuleName),
+					DataType: "Repository",
 				},
 			},
 			Returns: &ast.FunctionReturnSpecList{
@@ -81,11 +80,10 @@ func (s *ServiceGenImpl) CreateServiceFile() error {
 	abstractCode.AddStructVarDecl(ast.StructArgList{
 		&ast.StructArg{
 			StructName: "ServiceImpl",
-			IsPointer:  true,
 			Name:       fmt.Sprintf("%sRepo", s.ModuleName),
 			DataType: ast.StructDtypes{
 				LibName:  fmt.Sprintf("%srepo", s.ModuleName),
-				TypeName: "RepositoryImpl",
+				TypeName: "Repository",
 			},
 		},
 	})

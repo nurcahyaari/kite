@@ -53,7 +53,7 @@ func (s *RepositoryGenImpl) CreateRepositoryFile() error {
 				&ast.FunctionArg{
 					IsPointer: true,
 					Name:      "db",
-					LibName:   "infrastructure",
+					LibName:   "database",
 					DataType:  "MysqlImpl",
 				},
 			},
@@ -84,7 +84,7 @@ func (s *RepositoryGenImpl) CreateRepositoryFile() error {
 			IsPointer:  true,
 			Name:       "db",
 			DataType: ast.StructDtypes{
-				LibName:  "infrastructure",
+				LibName:  "database",
 				TypeName: "MysqlImpl",
 			},
 		},

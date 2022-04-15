@@ -136,9 +136,10 @@ func (s *HttpHandlerGenImpl) appendModuleHandlerIntoBaseHandler(handlerFilePath 
 	if err != nil {
 		return err
 	}
-	importAlias := fmt.Sprintf("%ssvc", s.ModuleName)
 
 	abstractCode := ast.NewAbstractCode(val, parser.ParseComments)
+
+	importAlias := fmt.Sprintf("%ssvc", s.ModuleName)
 	abstractCode.AddImport(ast.ImportSpec{
 		Name: importAlias,
 		Path: fmt.Sprintf("\"%s\"", servicePath),
@@ -149,7 +150,7 @@ func (s *HttpHandlerGenImpl) appendModuleHandlerIntoBaseHandler(handlerFilePath 
 			&ast.FunctionArg{
 				Name:     fmt.Sprintf("%sSvc", s.ModuleName),
 				LibName:  importAlias,
-				DataType: "ServiceImpl",
+				DataType: "Service",
 			},
 		},
 	})
@@ -159,7 +160,7 @@ func (s *HttpHandlerGenImpl) appendModuleHandlerIntoBaseHandler(handlerFilePath 
 			Name:       fmt.Sprintf("%sSvc", s.ModuleName),
 			DataType: ast.StructDtypes{
 				LibName:  importAlias,
-				TypeName: "ServiceImpl",
+				TypeName: "Service",
 			},
 			IsPointer: false,
 		},

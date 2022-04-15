@@ -3,6 +3,8 @@ package module
 import (
 	"fmt"
 
+	"github.com/nurcahyaari/kite/src/ast"
+	"github.com/nurcahyaari/kite/src/generator/misc"
 	"github.com/nurcahyaari/kite/src/utils/fs"
 )
 
@@ -15,6 +17,7 @@ type ModuleGen interface {
 	CreateSrcDir() error
 	CreateBaseModuleDir() error
 	CreateNewModule() error
+	AppendModuleToWire() error
 }
 
 type ModuleGenImpl struct {
@@ -31,6 +34,7 @@ type ModuleGenImpl struct {
 	// path of the project
 	ProjectPath string
 	// Derived module
+	GomodName string
 	*DtoGenImpl
 	*EntityGenImpl
 	*RepositoryGenImpl
@@ -55,6 +59,7 @@ func NewModuleGen(projectPath string, moduleName string, gomodName string) Modul
 		ModulePath:        modulePath,
 		ModuleName:        moduleName,
 		ProjectPath:       projectPath,
+		GomodName:         gomodName,
 		DtoGenImpl:        NewDtoGen(modulePath),
 		EntityGenImpl:     NewEntityGen(modulePath),
 		RepositoryGenImpl: NewRepositoryGen(moduleName, modulePath, gomodName),
@@ -89,6 +94,45 @@ func (s *ModuleGenImpl) CreateNewModule() error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (s *ModuleGenImpl) AppendModuleToWire() error {
+	// append repo
+	wireGen := misc.NewWire(s.ProjectPath, "")
+	wireGen.AddDependencyAfterCreatingModule(
+		ast.ImportSpec{
+			Name: fmt.Sprintf("%srepo", s.ModuleName),
+			Path: fmt.Sprintf("\"%s\"", fs.ConcatDirPath(s.GomodName, "src/module", s.ModuleName, "repository")),
+		},
+		ast.WireDependencyInjection{
+			VarName:                   fmt.Sprintf("%sRepo", s.ModuleName),
+			TargetInjectName:          fmt.Sprintf("%srepo", s.ModuleName),
+			TargetInjectConstructName: "NewRepository",
+			InterfaceLib:              fmt.Sprintf("%srepo", s.ModuleName),
+			InterfaceName:             "Repository",
+			StructLib:                 fmt.Sprintf("%srepo", s.ModuleName),
+			StructName:                "RepositoryImpl",
+		},
+	)
+
+	// append service
+	wireGen.AddDependencyAfterCreatingModule(
+		ast.ImportSpec{
+			Name: fmt.Sprintf("%ssvc", s.ModuleName),
+			Path: fmt.Sprintf("\"%s\"", fs.ConcatDirPath(s.GomodName, "src/module", s.ModuleName, "service")),
+		},
+		ast.WireDependencyInjection{
+			VarName:                   fmt.Sprintf("%sSvc", s.ModuleName),
+			TargetInjectName:          fmt.Sprintf("%ssvc", s.ModuleName),
+			TargetInjectConstructName: "NewService",
+			InterfaceLib:              fmt.Sprintf("%ssvc", s.ModuleName),
+			InterfaceName:             "Service",
+			StructLib:                 fmt.Sprintf("%ssvc", s.ModuleName),
+			StructName:                "ServiceImpl",
+		},
+	)
 
 	return nil
 }

@@ -1,12 +1,3 @@
-/*
-** Package for handling Auth Middleware using JWT
-**
-**
-**
-**
- */
-// JwtVerifyToken usefull for middleware for verify the jwt token from the Authorization
-// this function will serve to middleware and usefull for the idiomatic framework like gorm or chi or just net/http
 func JwtVerifyToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		JwtToken := strings.Replace(r.Header.Get("Authorization"), fmt.Sprintf("%s ", "Bearer"), "", 1)
@@ -59,8 +50,6 @@ func JwtVerifyToken(next http.Handler) http.Handler {
 	})
 }
 
-// JwtVerifyRefreshToken usefull for middleware for verify the jwt refresh token from the Authorization
-// this function will serve to middleware and usefull for the idiomatic framework like gorm or chi or just net/http
 func JwtVerifyRefreshToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		JwtToken := strings.Replace(r.Header.Get("Authorization"), fmt.Sprintf("%s ", "Bearer"), "", 1)

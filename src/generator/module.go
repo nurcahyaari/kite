@@ -80,6 +80,8 @@ func (s *ModuleImpl) CreateNewModule() error {
 		return err
 	}
 
+	moduleGen.AppendModuleToWire()
+
 	fs.GoFormat(s.Info.ProjectPath, s.Info.GoModName)
 
 	logger.Infoln(fmt.Sprintf("Your Module '%s' already created under '%s' App", s.Name, s.Info.GoModName))
