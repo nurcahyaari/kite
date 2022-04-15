@@ -236,6 +236,11 @@ func (s AppImpl) createMainApp() error {
 	if err != nil {
 		return err
 	}
+
+	// TODO: remove this
+	// since I don't know how to add new line with ast standard lib, so I use this
+	mainTemplate = fmt.Sprintf("\n%s", mainTemplate)
+
 	mainAbstractCode := ast.NewAbstractCode(mainTemplate, parser.ParseComments)
 	mainAbstractCode.AddImport(ast.ImportSpec{
 		Path: fmt.Sprintf("\"%s/internal/logger\"", s.Info.GoModName),

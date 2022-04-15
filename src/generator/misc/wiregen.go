@@ -36,6 +36,10 @@ func (s WireGenImpl) CreateWireFiles() error {
 		return err
 	}
 
+	// TODO: remove this
+	// since I don't know how to add new line with ast standard lib, so I use this
+	templateCode = fmt.Sprintf("\n%s", templateCode)
+
 	abstractCode := ast.NewAbstractCode(templateCode, parser.ParseComments)
 	abstractCode.AddCommentOutsideFunction(ast.Comment{
 		Value: "//+build wireinject",

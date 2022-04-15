@@ -2655,7 +2655,6 @@ func TestAddCommentBeforeFunction(t *testing.T) {
 		// expect you change the test case please :D
 		// building this string obviously difficult
 		exp := `//go:generate go run github.com/google/wire/cmd/wire
-
 package test
 
 func main()	{}

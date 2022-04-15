@@ -32,6 +32,10 @@ func (s *ModuleImpl) CreateNewModule() error {
 	moduleDirParentPath := fs.ConcatDirPath(s.Info.ProjectPath, "src")
 	moduleGen := module.NewModuleGen(s.Info.ProjectPath, s.Name, s.Info.GoModName)
 
+	if !fs.IsFolderExist(s.Info.ProjectPath) {
+		return fmt.Errorf("project isn't exist")
+	}
+
 	if !fs.IsFolderExist(moduleDirParentPath) {
 		err := moduleGen.CreateSrcDir()
 		if err != nil {

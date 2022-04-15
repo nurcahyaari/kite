@@ -898,28 +898,25 @@ func (a *AbstractCodeImpl) AddCommentOutsideFunction(commentSpec Comment) {
 			// add comment before import
 			astfile, ok := n.(*ast.File)
 			if ok {
+				comment := &ast.Comment{
+					Text:  commentSpec.Value,
+					Slash: astfile.Pos() - 2,
+				}
 				if len(astfile.Comments) == 0 {
 					astfile.Comments = append(astfile.Comments, &ast.CommentGroup{
 						List: []*ast.Comment{
-							{
-								Text:  commentSpec.Value,
-								Slash: astfile.Pos() - 2,
-							},
+							comment,
 						},
 					})
-					astfile.Name.NamePos = token.Pos(a.fset.Position(astfile.Package).Column)
 				} else {
 					astfile.Comments = append(astfile.Comments[:1], astfile.Comments...)
 					astfile.Comments[0] = &ast.CommentGroup{
 						List: []*ast.Comment{
-							{
-								Text:  commentSpec.Value,
-								Slash: astfile.Pos() - 2,
-							},
+							comment,
 						},
 					}
-					astfile.Name.NamePos += token.Pos(2)
 				}
+				astfile.Name.NamePos += token.Pos(2)
 			}
 		}
 
