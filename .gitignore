@@ -1,3 +1,4 @@
 .DS_Store
 /tests/projects
 kite
+wire_gen.go
