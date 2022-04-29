@@ -71,7 +71,7 @@ func (s InternalGenImpl) CreateInternalModules(dto InternalDto) error {
 		Path:         protocolPath,
 		GomodName:    dto.GomodName,
 	}
-	err = s.protocolGen.CreateProtocolInternalTypeDir(protocolDto)
+	err = s.protocolGen.CreateProtocolInternalType(protocolDto)
 	if err != nil {
 		return err
 	}

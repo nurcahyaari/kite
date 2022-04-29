@@ -1,6 +1,6 @@
-package misc
+package wiregen
 
-type MiscDto struct {
+type WireDto struct {
 	ProjectPath string
 	GomodName   string
 }

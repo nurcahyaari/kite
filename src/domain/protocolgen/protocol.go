@@ -8,8 +8,8 @@ import (
 
 type ProtocolGen interface {
 	createProtocolDir(dto ProtocolDto) (string, error)
-	CreateProtocolInternalTypeDir(dto ProtocolDto) error
-	CreateProtocolSrcDir(dto ProtocolDto) error
+	CreateProtocolInternalType(dto ProtocolDto) error
+	CreateProtocolSrc(dto ProtocolDto) error
 }
 
 type ProtocolGenImpl struct {
@@ -37,7 +37,7 @@ func (s *ProtocolGenImpl) createProtocolDir(dto ProtocolDto) (string, error) {
 	return dirPath, nil
 }
 
-func (s *ProtocolGenImpl) CreateProtocolInternalTypeDir(dto ProtocolDto) error {
+func (s *ProtocolGenImpl) CreateProtocolInternalType(dto ProtocolDto) error {
 	dirPath, err := s.createProtocolDir(dto)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (s *ProtocolGenImpl) CreateProtocolInternalTypeDir(dto ProtocolDto) error {
 }
 
 // create protocol directory. under src or under internal
-func (s *ProtocolGenImpl) CreateProtocolSrcDir(dto ProtocolDto) error {
+func (s *ProtocolGenImpl) CreateProtocolSrc(dto ProtocolDto) error {
 	var err error
 
 	if dto.ProtocolType.NotEmpty() {

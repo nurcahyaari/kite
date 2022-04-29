@@ -10,16 +10,20 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/cachegen"
 	"github.com/nurcahyaari/kite/src/domain/configgen"
 	"github.com/nurcahyaari/kite/src/domain/dbgen"
+	"github.com/nurcahyaari/kite/src/domain/domaingen"
+	// "github.com/nurcahyaari/kite/src/domain/domaingen/repositorygen"
+	// "github.com/nurcahyaari/kite/src/domain/domaingen/servicegen"
 	"github.com/nurcahyaari/kite/src/domain/envgen"
 	"github.com/nurcahyaari/kite/src/domain/generator"
 	"github.com/nurcahyaari/kite/src/domain/infrastructuregen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen/loggergen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen/utilsgen"
-	"github.com/nurcahyaari/kite/src/domain/misc"
+	"github.com/nurcahyaari/kite/src/domain/modulegen"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen/protocolhttpgen"
 	"github.com/nurcahyaari/kite/src/domain/srcgen"
+	"github.com/nurcahyaari/kite/src/domain/wiregen"
 	clirouter "github.com/nurcahyaari/kite/src/protocol/cli"
 	cliapp "github.com/urfave/cli/v2"
 )
@@ -51,10 +55,10 @@ var envGen = wire.NewSet(
 )
 
 var wireGen = wire.NewSet(
-	misc.NewWire,
+	wiregen.NewWire,
 	wire.Bind(
-		new(misc.WireGen),
-		new(*misc.WireGenImpl),
+		new(wiregen.WireGen),
+		new(*wiregen.WireGenImpl),
 	),
 )
 
@@ -138,11 +142,51 @@ var srcGen = wire.NewSet(
 	),
 )
 
+// var repositoryGen = wire.NewSet(
+// 	repositorygen.NewRepositoryGen,
+// 	wire.Bind(
+// 		new(repositorygen.RepositoryGen),
+// 		new(*repositorygen.RepositoryGenImpl),
+// 	),
+// )
+
+// var serviceGen = wire.NewSet(
+// 	servicegen.NewServiceGen,
+// 	wire.Bind(
+// 		new(servicegen.ServiceGen),
+// 		new(*servicegen.ServiceGenImpl),
+// 	),
+// )
+
+var domainGen = wire.NewSet(
+	domaingen.NewDomainGen,
+	wire.Bind(
+		new(domaingen.DomainGen),
+		new(*domaingen.DomainGenImpl),
+	),
+)
+
+var moduleGen = wire.NewSet(
+	modulegen.NewModuleGen,
+	wire.Bind(
+		new(modulegen.ModuleGen),
+		new(*modulegen.ModuleGenImpl),
+	),
+)
+
 var appGen = wire.NewSet(
 	generator.NewApp,
 	wire.Bind(
 		new(generator.AppGenNew),
 		new(*generator.AppGenNewImpl),
+	),
+)
+
+var domainCreatorGen = wire.NewSet(
+	generator.NewDomainGen,
+	wire.Bind(
+		new(generator.DomainGen),
+		new(*generator.DomainGenImpl),
 	),
 )
 
@@ -160,6 +204,7 @@ var cliRouter = wire.NewSet(
 func InitCliApp() *cli.CliImpl {
 	wire.Build(
 		filesystemdb,
+		moduleGen,
 		configGen,
 		wireGen,
 		envGen,
@@ -173,7 +218,11 @@ func InitCliApp() *cli.CliImpl {
 		protocolGen,
 		protocolHttpGen,
 		srcGen,
+		// repositoryGen,
+		// serviceGen,
+		domainGen,
 		appGen,
+		domainCreatorGen,
 		cliApp,
 		cliRouter,
 		cli.NewCliApp,

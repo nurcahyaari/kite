@@ -50,7 +50,7 @@ func (s SrcGenImpl) CreateSrcDirectory(dto SrcDto) error {
 		GomodName:    dto.GomodName,
 		Path:         handlerPath,
 	}
-	err := s.protocolGen.CreateProtocolSrcDir(protocolDto)
+	err := s.protocolGen.CreateProtocolSrc(protocolDto)
 	if err != nil {
 		return err
 	}

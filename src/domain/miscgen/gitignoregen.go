@@ -1,4 +1,4 @@
-package misc
+package miscgen
 
 import (
 	"github.com/nurcahyaari/kite/infrastructure/database"

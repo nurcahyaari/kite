@@ -18,15 +18,18 @@ type CliRouter interface {
 }
 
 type CliRouterImpl struct {
-	path   string
-	appGen generator.AppGenNew
+	path      string
+	appGen    generator.AppGenNew
+	domainGen generator.DomainGen
 }
 
 func NewCliRouter(
-	gen generator.AppGenNew,
+	appGen generator.AppGenNew,
+	domainGen generator.DomainGen,
 ) *CliRouterImpl {
 	return &CliRouterImpl{
-		appGen: gen,
+		appGen:    appGen,
+		domainGen: domainGen,
 	}
 }
 
@@ -38,37 +41,47 @@ func (s CliRouterImpl) CreateNewApps(ctx *cli.Context, path string) error {
 		s.path = fmt.Sprintf("%s/", ctx.String("path"))
 	}
 
-	err := s.appGen.CreateNewApp(generator.ProjectInfo{
-		GoModName:    gomodName,
-		ProjectPath:  utils.ConcatDirPath(s.path, gomodName),
-		ProtocolType: protocolType,
-	})
-	// appGenerator := generator.NewAppNew(generator.ProjectInfo{
-	// 	GoModName:   gomodName,
-	// 	ProjectPath: utils.ConcatDirPath(s.path, gomodName),
-	// })
+	dto := generator.AppNewDto{
+		ProjectInfo: generator.ProjectInfo{
+			GoModName:    gomodName,
+			ProjectPath:  utils.ConcatDirPath(s.path, gomodName),
+			ProtocolType: protocolType,
+		},
+	}
 
-	// err := appGenerator.CreateNewApp()
+	if err := dto.Validate(); err != nil {
+		return err
+	}
+
+	err := s.appGen.CreateNewApp(dto)
 
 	return err
 }
 
 func (s CliRouterImpl) CreateNewDomain(ctx *cli.Context, path string) error {
 	// var err error
-	// if ctx.String("path") != "" {
-	// 	s.path = fmt.Sprintf("%s/", ctx.String("path"))
-	// }
-	// moduleName := ctx.String("name")
-	// gomodName := utils.GetGoModName(s.path)
+	if ctx.String("path") != "" {
+		s.path = fmt.Sprintf("%s/", ctx.String("path"))
+	}
+	moduleName := ctx.String("name")
+	isDomainFullCreational := ctx.Bool("domain-full-creational")
+	gomodName := utils.GetGoModName(s.path)
+	domainDto := generator.DomainNewDto{
+		ProjectInfo: generator.ProjectInfo{
+			GoModName:   gomodName,
+			Name:        moduleName,
+			ProjectPath: path,
+		},
+		IsDomainFullCreational: isDomainFullCreational,
+	}
 
-	// moduleGen := generator.NewDomain(moduleName, generator.ProjectInfo{
-	// 	GoModName:   gomodName,
-	// 	ProjectPath: s.path,
-	// })
-	// err = moduleGen.CreateNewModule()
+	if err := domainDto.Validate(); err != nil {
+		return err
+	}
 
-	// return err
-	return nil
+	err := s.domainGen.CreateNewDomain(domainDto)
+
+	return err
 }
 
 func (s CliRouterImpl) CreateNewHandler(ctx *cli.Context, path string) error {

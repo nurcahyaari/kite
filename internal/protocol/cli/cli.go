@@ -71,6 +71,11 @@ func (s CliImpl) CreateNewCliApp() {
 					Value: "",
 					Usage: "Path of projects",
 				},
+				&cli.BoolFlag{
+					Name:  "domain-full-creational",
+					Value: true,
+					Usage: "To create full domain",
+				},
 			},
 			Action: func(ctx *cli.Context) error {
 				return s.clirouter.CreateNewDomain(ctx, path)

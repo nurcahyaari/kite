@@ -72,14 +72,19 @@ func GoGenerateRun(projectPath string) error {
 }
 
 func GetGoModName(gomodPath string) string {
-	goModBytes, err := ioutil.ReadFile(fmt.Sprintf("%sgo.mod", gomodPath))
+	path := ConcatDirPath(gomodPath, "go.mod")
+	goModBytes, err := ioutil.ReadFile(path)
 	if err != nil {
-		logger.Errorln(err.Error())
 		return ""
 	}
 
 	modName := modfile.ModulePath(goModBytes)
 	return modName
+}
+
+func IsFolderHasGoMod(path string) bool {
+	s := GetGoModName(path)
+	return s != ""
 }
 
 func GetAppNameBasedOnGoMod(goModName string) string {

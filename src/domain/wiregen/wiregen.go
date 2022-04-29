@@ -1,4 +1,4 @@
-package misc
+package wiregen
 
 import (
 	"fmt"
@@ -11,8 +11,8 @@ import (
 )
 
 type WireGen interface {
-	CreateWireFiles(dto MiscDto) error
-	AddDependencyAfterCreatingModule(dto MiscDto, importSpec ast.ImportSpec, dependency ast.WireDependencyInjection) error
+	CreateWireFiles(dto WireDto) error
+	AddDependencyAfterCreatingModule(dto WireDto, importSpec ast.ImportSpec, dependency ast.WireDependencyInjection) error
 }
 
 type WireGenImpl struct {
@@ -32,7 +32,7 @@ func NewWire(
 	}
 }
 
-func (s WireGenImpl) CreateWireFiles(dto MiscDto) error {
+func (s WireGenImpl) CreateWireFiles(dto WireDto) error {
 	templateNew := templates.NewTemplateNewImpl("main", "")
 	templateCode, err := templateNew.Render("", nil)
 	if err != nil {
@@ -186,7 +186,7 @@ func (s WireGenImpl) CreateWireFiles(dto MiscDto) error {
 	return s.fs.CreateFileIfNotExists(dto.ProjectPath, "wire.go", templateCode)
 }
 
-func (s WireGenImpl) AddDependencyAfterCreatingModule(dto MiscDto, importSpec ast.ImportSpec, dependency ast.WireDependencyInjection) error {
+func (s WireGenImpl) AddDependencyAfterCreatingModule(dto WireDto, importSpec ast.ImportSpec, dependency ast.WireDependencyInjection) error {
 	wirePath := utils.ConcatDirPath(dto.ProjectPath, "wire.go")
 	val, err := utils.ReadFile(wirePath)
 	if err != nil {

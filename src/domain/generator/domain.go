@@ -2,26 +2,40 @@ package generator
 
 import (
 	"github.com/nurcahyaari/kite/infrastructure/database"
+	"github.com/nurcahyaari/kite/src/domain/domaingen"
 )
 
 type DomainGen interface {
-	CreateNewDomain() error
+	CreateNewDomain(dto DomainNewDto) error
 }
 
 type DomainGenImpl struct {
-	fs database.FileSystem
+	fs        database.FileSystem
+	domainGen domaingen.DomainGen
 }
 
 func NewDomainGen(
 	fs database.FileSystem,
+	domainGen domaingen.DomainGen,
 ) *DomainGenImpl {
-	// domainPath := utils.ConcatDirPath(info.ProjectPath, "src", name)
 	return &DomainGenImpl{
-		// fs:         database.NewFileSystem(domainPath),
-		fs: fs,
+		fs:        fs,
+		domainGen: domainGen,
 	}
 }
 
-func (s DomainGenImpl) CreateNewDomain(info ProjectInfo) error {
-	return nil
+func (s DomainGenImpl) CreateNewDomain(dto DomainNewDto) error {
+	domainCreationalType := domaingen.TypeDomainFullCreation
+	if !dto.IsDomainFullCreational {
+		domainCreationalType = domaingen.TypeDomainFolderOnlyCreation
+	}
+
+	err := s.domainGen.CreateDomain(domaingen.DomainDto{
+		Name:                 dto.Name,
+		Path:                 dto.ProjectPath,
+		GomodName:            dto.GoModName,
+		DomainCreationalType: domaingen.NewDomainCreationalType(domainCreationalType),
+	})
+
+	return err
 }

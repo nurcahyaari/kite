@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 
@@ -19,7 +20,6 @@ const (
 	FileWasCreated       filesystemErr = "File already created"
 	FolderWasCreated     filesystemErr = "Folder already created %s"
 	GoFmtErr             filesystemErr = "Failed to run go fmt"
-	GoModInitErr         filesystemErr = "Failed to go mod init"
 	GitinitErr           filesystemErr = "Failed to run gitinit, maybe git isn't installed on your device"
 	MkdirErr             filesystemErr = "Failed to create a folder"
 	MkfileErr            filesystemErr = "Failed to create a file"
@@ -33,6 +33,7 @@ func printErr(errorName filesystemErr, opt ...interface{}) error {
 type FileSystem interface {
 	IsFileExists(filepath string) bool
 	IsFolderExists(path string) bool
+	IsFolderEmpty(path string) bool
 	CreateFolder(path string) error
 	CreateFolderIfNotExists(path string) error
 	CreateFile(path string, fileName string, fileTemplate string) error
@@ -58,6 +59,17 @@ func (f FileSystemImpl) IsFileExists(filepath string) bool {
 
 func (f FileSystemImpl) IsFolderExists(path string) bool {
 	return f.IsFileExists(path)
+}
+
+func (f FileSystemImpl) IsFolderEmpty(path string) bool {
+	fs, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer fs.Close()
+
+	_, err = fs.Readdirnames(1)
+	return err == io.EOF
 }
 
 func (f FileSystemImpl) CreateFolder(path string) error {

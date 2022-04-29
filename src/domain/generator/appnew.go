@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"go/parser"
 
@@ -11,18 +12,18 @@ import (
 	"github.com/nurcahyaari/kite/internal/utils/ast"
 	"github.com/nurcahyaari/kite/src/domain/configgen"
 	"github.com/nurcahyaari/kite/src/domain/dbgen"
+	"github.com/nurcahyaari/kite/src/domain/domaingen"
 	"github.com/nurcahyaari/kite/src/domain/envgen"
 	"github.com/nurcahyaari/kite/src/domain/infrastructuregen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen"
-	"github.com/nurcahyaari/kite/src/domain/misc"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen"
 	"github.com/nurcahyaari/kite/src/domain/srcgen"
+	"github.com/nurcahyaari/kite/src/domain/wiregen"
 )
 
 type AppGenNew interface {
-	CreateNewApp(info ProjectInfo) error
-	// Private
-	createMainApp(info ProjectInfo) error
+	CreateNewApp(dto AppNewDto) error
+	createMainApp(dto AppNewDto) error
 	rollback(path string)
 }
 
@@ -30,20 +31,22 @@ type AppGenNewImpl struct {
 	fs                database.FileSystem
 	configGen         configgen.ConfigGen
 	envGen            envgen.EnvGen
-	wireGen           misc.WireGen
+	wireGen           wiregen.WireGen
 	internalGen       internalgen.InternalGen
 	infrastructureGen infrastructuregen.InfrastructureGen
 	srcGen            srcgen.SrcGen
+	domainGen         domaingen.DomainGen
 }
 
 func NewApp(
 	fs database.FileSystem,
 	configGen configgen.ConfigGen,
 	envGen envgen.EnvGen,
-	wireGen misc.WireGen,
+	wireGen wiregen.WireGen,
 	internalGen internalgen.InternalGen,
 	infrastructureGen infrastructuregen.InfrastructureGen,
 	srcGen srcgen.SrcGen,
+	domainGen domaingen.DomainGen,
 ) *AppGenNewImpl {
 	return &AppGenNewImpl{
 		fs:                fs,
@@ -53,24 +56,39 @@ func NewApp(
 		internalGen:       internalGen,
 		infrastructureGen: infrastructureGen,
 		srcGen:            srcGen,
+		domainGen:         domainGen,
 	}
 }
 
-func (s AppGenNewImpl) CreateNewApp(info ProjectInfo) error {
-	s.fs.CreateFolderIfNotExists(info.ProjectPath)
+func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
+	if !s.fs.IsFolderEmpty(dto.ProjectPath) && s.fs.IsFolderExists(dto.ProjectPath) {
+		return errors.New("the folder is not empty")
+	}
+
+	if utils.IsFolderHasGoMod(dto.ProjectPath) {
+		return errors.New("the folder already had go.mod")
+	}
+
+	s.fs.CreateFolderIfNotExists(dto.ProjectPath)
+
+	// init go.mod
+	err := utils.GoModInit(dto.ProjectPath, dto.GoModName)
+	if err != nil {
+		return err
+	}
 
 	// setup all path
-	configPath := utils.ConcatDirPath(info.ProjectPath, "config")
-	internalPath := utils.ConcatDirPath(info.ProjectPath, "internal")
-	infrastructurePath := utils.ConcatDirPath(info.ProjectPath, "infrastructure")
-	srcPath := utils.ConcatDirPath(info.ProjectPath, "src")
+	configPath := utils.ConcatDirPath(dto.ProjectPath, "config")
+	internalPath := utils.ConcatDirPath(dto.ProjectPath, "internal")
+	infrastructurePath := utils.ConcatDirPath(dto.ProjectPath, "infrastructure")
+	srcPath := utils.ConcatDirPath(dto.ProjectPath, "src")
 
 	// create config module
 	configGenDto := configgen.ConfigDto{
 		ConfigPath: configPath,
-		AppName:    info.Name,
+		AppName:    dto.Name,
 	}
-	err := s.configGen.CreateConfigDir(configGenDto)
+	err = s.configGen.CreateConfigDir(configGenDto)
 	if err != nil {
 		return err
 	}
@@ -83,7 +101,7 @@ func (s AppGenNewImpl) CreateNewApp(info ProjectInfo) error {
 	// create internal module
 	internalDto := internalgen.InternalDto{
 		Path:      internalPath,
-		GomodName: info.GoModName,
+		GomodName: dto.GoModName,
 	}
 	err = s.internalGen.CreateInternalDir(internalDto)
 	if err != nil {
@@ -97,7 +115,7 @@ func (s AppGenNewImpl) CreateNewApp(info ProjectInfo) error {
 
 	// create infrastructure module
 	infrastructureDto := infrastructuregen.InfrastructureDto{
-		GomodName:          info.GoModName,
+		GomodName:          dto.GoModName,
 		DatabaseType:       dbgen.DbMysql,
 		InfrastructurePath: infrastructurePath,
 	}
@@ -114,8 +132,8 @@ func (s AppGenNewImpl) CreateNewApp(info ProjectInfo) error {
 	// create src module
 	srcDto := srcgen.SrcDto{
 		Path:         srcPath,
-		GomodName:    info.GoModName,
-		ProtocolType: protocolgen.NewProtocolType(info.ProtocolType),
+		GomodName:    dto.GoModName,
+		ProtocolType: protocolgen.NewProtocolType(dto.ProtocolType),
 	}
 	err = s.srcGen.CreateSrcDirectory(srcDto)
 	if err != nil {
@@ -123,22 +141,22 @@ func (s AppGenNewImpl) CreateNewApp(info ProjectInfo) error {
 	}
 
 	// create file in project path dir level
-	s.envGen.CreateEnvFile(info.ProjectPath)
-	s.envGen.CreateEnvExampleFile(info.ProjectPath)
+	s.envGen.CreateEnvFile(dto.ProjectPath)
+	s.envGen.CreateEnvExampleFile(dto.ProjectPath)
 
-	s.wireGen.CreateWireFiles(misc.MiscDto{
-		ProjectPath: info.ProjectPath,
-		GomodName:   info.GoModName,
+	s.wireGen.CreateWireFiles(wiregen.WireDto{
+		ProjectPath: dto.ProjectPath,
+		GomodName:   dto.GoModName,
 	})
 
-	err = s.createMainApp(info)
+	err = s.createMainApp(dto)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s AppGenNewImpl) createMainApp(info ProjectInfo) error {
+func (s AppGenNewImpl) createMainApp(dto AppNewDto) error {
 	logger.Info("Create main.go file... ")
 
 	templateNew := misctemplate.NewMainTemplate()
@@ -153,7 +171,7 @@ func (s AppGenNewImpl) createMainApp(info ProjectInfo) error {
 
 	mainAbstractCode := ast.NewAbstractCode(mainTemplate, parser.ParseComments)
 	mainAbstractCode.AddImport(ast.ImportSpec{
-		Path: fmt.Sprintf("\"%s/internal/logger\"", info.GoModName),
+		Path: fmt.Sprintf("\"%s/internal/logger\"", dto.GoModName),
 	})
 	mainAbstractCode.AddCommentOutsideFunction(ast.Comment{
 		Value: "//go:generate go run github.com/google/wire/cmd/wire",
@@ -168,7 +186,7 @@ func (s AppGenNewImpl) createMainApp(info ProjectInfo) error {
 
 	mainTemplate = mainAbstractCode.GetCode()
 
-	err = s.fs.CreateFileIfNotExists(info.ProjectPath, "main.go", mainTemplate)
+	err = s.fs.CreateFileIfNotExists(dto.ProjectPath, "main.go", mainTemplate)
 	if err != nil {
 		return err
 	}
