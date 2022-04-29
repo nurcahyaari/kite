@@ -47,10 +47,26 @@ func (s AppNewDto) Validate() error {
 
 type DomainNewDto struct {
 	ProjectInfo
-	IsDomainFullCreational bool
+	IsCreateDomainFolderOnly bool
 }
 
 func (s DomainNewDto) Validate() error {
+	err := s.ProjectInfo.Validate()
+
+	errRespList := errcustom.NewErrRespFromError(err)
+	if errRespList != nil {
+		return errRespList.ToErrorAsString()
+	}
+
+	return nil
+}
+
+type HandlerNewDto struct {
+	ProjectInfo
+	ProtocolType string
+}
+
+func (s HandlerNewDto) Validate() error {
 	err := s.ProjectInfo.Validate()
 
 	errRespList := errcustom.NewErrRespFromError(err)

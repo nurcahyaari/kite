@@ -2,6 +2,7 @@ package generator
 
 import (
 	"github.com/nurcahyaari/kite/infrastructure/database"
+	"github.com/nurcahyaari/kite/internal/utils"
 	"github.com/nurcahyaari/kite/src/domain/domaingen"
 )
 
@@ -26,13 +27,15 @@ func NewDomainGen(
 
 func (s DomainGenImpl) CreateNewDomain(dto DomainNewDto) error {
 	domainCreationalType := domaingen.TypeDomainFullCreation
-	if !dto.IsDomainFullCreational {
+	if dto.IsCreateDomainFolderOnly {
 		domainCreationalType = domaingen.TypeDomainFolderOnlyCreation
 	}
 
+	domainPath := utils.ConcatDirPath(dto.ProjectPath, "src", "domains", dto.Name)
+
 	err := s.domainGen.CreateDomain(domaingen.DomainDto{
 		Name:                 dto.Name,
-		Path:                 dto.ProjectPath,
+		Path:                 domainPath,
 		GomodName:            dto.GoModName,
 		DomainCreationalType: domaingen.NewDomainCreationalType(domainCreationalType),
 	})

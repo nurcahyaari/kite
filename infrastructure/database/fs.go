@@ -26,7 +26,7 @@ const (
 )
 
 // panicErr return an error message
-func printErr(errorName filesystemErr, opt ...interface{}) error {
+func PrintFsErr(errorName filesystemErr, opt ...interface{}) error {
 	return fmt.Errorf(logger.Errorf(errorName), opt)
 }
 
@@ -74,7 +74,7 @@ func (f FileSystemImpl) IsFolderEmpty(path string) bool {
 
 func (f FileSystemImpl) CreateFolder(path string) error {
 	if err := os.MkdirAll(path, 0755); err != nil {
-		return printErr(MkdirErr)
+		return PrintFsErr(MkdirErr)
 	}
 
 	return nil
@@ -83,7 +83,7 @@ func (f FileSystemImpl) CreateFolder(path string) error {
 func (f FileSystemImpl) CreateFolderIfNotExists(path string) error {
 
 	if f.IsFolderExists(path) {
-		return printErr(FolderWasCreated, path)
+		return PrintFsErr(FolderWasCreated, path)
 	}
 
 	return f.CreateFolder(path)
@@ -92,12 +92,12 @@ func (f FileSystemImpl) CreateFolderIfNotExists(path string) error {
 func (f FileSystemImpl) CreateFile(path string, fileName string, fileTemplate string) error {
 	resultFile, err := os.Create(utils.ConcatDirPath(path, fileName))
 	if err != nil {
-		return printErr(MkfileErr)
+		return PrintFsErr(MkfileErr)
 	}
 
 	err = f.writeStringToFile(fileTemplate, resultFile)
 	if err != nil {
-		return printErr(filesystemErr(err.Error()))
+		return PrintFsErr(filesystemErr(err.Error()))
 	}
 
 	return nil
@@ -115,7 +115,7 @@ func (f FileSystemImpl) DeleteFile(path string) error {
 
 func (f FileSystemImpl) CreateFileIfNotExists(path string, fileName string, fileTemplate string) error {
 	if f.IsFileExists(utils.ConcatDirPath(path, fileName)) {
-		return printErr(FolderWasCreated, path)
+		return PrintFsErr(FolderWasCreated, path)
 	}
 
 	err := f.CreateFile(path, fileName, fileTemplate)

@@ -18,7 +18,6 @@ type SrcGen interface {
 type SrcGenImpl struct {
 	fs          database.FileSystem
 	protocolGen protocolgen.ProtocolGen
-	// domainGen   domaingen.
 }
 
 func NewSrcGen(
@@ -50,7 +49,7 @@ func (s SrcGenImpl) CreateSrcDirectory(dto SrcDto) error {
 		GomodName:    dto.GomodName,
 		Path:         handlerPath,
 	}
-	err := s.protocolGen.CreateProtocolSrc(protocolDto)
+	err := s.protocolGen.CreateProtocolSrcBaseFile(protocolDto)
 	if err != nil {
 		return err
 	}

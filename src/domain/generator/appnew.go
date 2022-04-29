@@ -10,6 +10,7 @@ import (
 	"github.com/nurcahyaari/kite/internal/templates/misctemplate"
 	"github.com/nurcahyaari/kite/internal/utils"
 	"github.com/nurcahyaari/kite/internal/utils/ast"
+	"github.com/nurcahyaari/kite/internal/utils/pkg"
 	"github.com/nurcahyaari/kite/src/domain/configgen"
 	"github.com/nurcahyaari/kite/src/domain/dbgen"
 	"github.com/nurcahyaari/kite/src/domain/domaingen"
@@ -153,6 +154,12 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 	if err != nil {
 		return err
 	}
+
+	err = s.installPackage()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -193,6 +200,26 @@ func (s AppGenNewImpl) createMainApp(dto AppNewDto) error {
 
 	logger.InfoSuccessln("success")
 	return nil
+}
+
+func (s AppGenNewImpl) installPackage() error {
+	appPkg := pkg.AppPackages{
+		Packages: []string{
+			"github.com/rs/zerolog",
+			"github.com/spf13/viper",
+			"github.com/go-sql-driver/mysql",
+			"github.com/jmoiron/sqlx",
+			"github.com/go-chi/chi/v5",
+			"github.com/go-chi/cors",
+			"github.com/golang-jwt/jwt",
+			"github.com/google/wire",
+			"github.com/google/wire/cmd/wire",
+			"github.com/swaggo/swag/cmd/swag",
+			"github.com/swaggo/http-swagger",
+		},
+	}
+
+	return appPkg.InstallPackage()
 }
 
 func (s AppGenNewImpl) rollback(path string) {

@@ -15,6 +15,7 @@ import (
 	// "github.com/nurcahyaari/kite/src/domain/domaingen/servicegen"
 	"github.com/nurcahyaari/kite/src/domain/envgen"
 	"github.com/nurcahyaari/kite/src/domain/generator"
+	"github.com/nurcahyaari/kite/src/domain/handlergen"
 	"github.com/nurcahyaari/kite/src/domain/infrastructuregen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen/loggergen"
@@ -174,6 +175,14 @@ var moduleGen = wire.NewSet(
 	),
 )
 
+var handlerGen = wire.NewSet(
+	handlergen.NewHandlerGen,
+	wire.Bind(
+		new(handlergen.HandlerGen),
+		new(*handlergen.HandlerGenImpl),
+	),
+)
+
 var appGen = wire.NewSet(
 	generator.NewApp,
 	wire.Bind(
@@ -187,6 +196,14 @@ var domainCreatorGen = wire.NewSet(
 	wire.Bind(
 		new(generator.DomainGen),
 		new(*generator.DomainGenImpl),
+	),
+)
+
+var handlerCreatorGen = wire.NewSet(
+	generator.NewHandlerGen,
+	wire.Bind(
+		new(generator.HandlerGen),
+		new(*generator.HandlerGenImpl),
 	),
 )
 
@@ -218,11 +235,13 @@ func InitCliApp() *cli.CliImpl {
 		protocolGen,
 		protocolHttpGen,
 		srcGen,
+		handlerGen,
 		// repositoryGen,
 		// serviceGen,
 		domainGen,
 		appGen,
 		domainCreatorGen,
+		handlerCreatorGen,
 		cliApp,
 		cliRouter,
 		cli.NewCliApp,

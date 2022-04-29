@@ -58,8 +58,8 @@ func (s ServiceGenImpl) CreateServiceFile(dto ServiceDto) error {
 			Name: "NewService",
 			Args: ast.FunctionArgList{
 				&ast.FunctionArg{
-					Name:     fmt.Sprintf("%sRepo", dto.ModuleName),
-					LibName:  fmt.Sprintf("%srepo", dto.ModuleName),
+					Name:     fmt.Sprintf("%sRepo", dto.DomainName),
+					LibName:  fmt.Sprintf("%srepo", dto.DomainName),
 					DataType: "Repository",
 				},
 			},
@@ -76,8 +76,8 @@ func (s ServiceGenImpl) CreateServiceFile(dto ServiceDto) error {
 	abstractCode.AddFunctionArgsToReturn(ast.FunctionReturnArgsSpec{
 		FuncName:      "NewService",
 		ReturnName:    "ServiceImpl",
-		DataTypeKey:   fmt.Sprintf("%sRepo", dto.ModuleName),
-		DataTypeValue: fmt.Sprintf("%sRepo", dto.ModuleName),
+		DataTypeKey:   fmt.Sprintf("%sRepo", dto.DomainName),
+		DataTypeValue: fmt.Sprintf("%sRepo", dto.DomainName),
 	})
 	abstractCode.AddStructs(ast.StructSpecList{
 		&ast.StructSpec{
@@ -87,9 +87,9 @@ func (s ServiceGenImpl) CreateServiceFile(dto ServiceDto) error {
 	abstractCode.AddStructVarDecl(ast.StructArgList{
 		&ast.StructArg{
 			StructName: "ServiceImpl",
-			Name:       fmt.Sprintf("%sRepo", dto.ModuleName),
+			Name:       fmt.Sprintf("%sRepo", dto.DomainName),
 			DataType: ast.StructDtypes{
-				LibName:  fmt.Sprintf("%srepo", dto.ModuleName),
+				LibName:  fmt.Sprintf("%srepo", dto.DomainName),
 				TypeName: "Repository",
 			},
 		},
@@ -101,8 +101,8 @@ func (s ServiceGenImpl) CreateServiceFile(dto ServiceDto) error {
 		},
 	})
 	abstractCode.AddImport(ast.ImportSpec{
-		Name: fmt.Sprintf("%srepo", dto.ModuleName),
-		Path: fmt.Sprintf("\"%s/src/module/%s/repository\"", dto.GomodName, dto.ModuleName),
+		Name: fmt.Sprintf("%srepo", dto.DomainName),
+		Path: fmt.Sprintf("\"%s/src/domains/%s/repository\"", dto.GomodName, dto.DomainName),
 	})
 	err = abstractCode.RebuildCode()
 	if err != nil {

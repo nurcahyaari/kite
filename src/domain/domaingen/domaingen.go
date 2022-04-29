@@ -47,6 +47,9 @@ func (s DomainGenImpl) CreateDomain(dto DomainDto) error {
 }
 
 func (s DomainGenImpl) createDomainFull(dto DomainDto) error {
+	if s.fs.IsFolderExists(dto.Path) {
+		return database.PrintFsErr(database.FolderWasCreated, dto.Path)
+	}
 	repoPath := utils.ConcatDirPath(dto.Path, "repository")
 	servicePath := utils.ConcatDirPath(dto.Path, "service")
 
@@ -57,8 +60,9 @@ func (s DomainGenImpl) createDomainFull(dto DomainDto) error {
 	s.RepositoryGenImpl.CreateRepository(repoDto)
 
 	serviceDto := servicegen.ServiceDto{
-		Path:      servicePath,
-		GomodName: dto.GomodName,
+		Path:       servicePath,
+		GomodName:  dto.GomodName,
+		DomainName: dto.Name,
 	}
 	s.ServiceGenImpl.CreateService(serviceDto)
 

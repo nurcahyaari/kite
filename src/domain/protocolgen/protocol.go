@@ -9,7 +9,8 @@ import (
 type ProtocolGen interface {
 	createProtocolDir(dto ProtocolDto) (string, error)
 	CreateProtocolInternalType(dto ProtocolDto) error
-	CreateProtocolSrc(dto ProtocolDto) error
+	CreateProtocolSrcBaseFile(dto ProtocolDto) error
+	CreateProtocolSrcHandler(dto ProtocolDto) error
 }
 
 type ProtocolGenImpl struct {
@@ -60,7 +61,7 @@ func (s *ProtocolGenImpl) CreateProtocolInternalType(dto ProtocolDto) error {
 }
 
 // create protocol directory. under src or under internal
-func (s *ProtocolGenImpl) CreateProtocolSrc(dto ProtocolDto) error {
+func (s *ProtocolGenImpl) CreateProtocolSrcBaseFile(dto ProtocolDto) error {
 	var err error
 
 	if dto.ProtocolType.NotEmpty() {
@@ -72,7 +73,30 @@ func (s *ProtocolGenImpl) CreateProtocolSrc(dto ProtocolDto) error {
 
 		switch dto.ProtocolType {
 		case Http:
-			err = s.httpProtocol.CreateProtocolSrcHttp(path)
+			err = s.httpProtocol.CreateProtocolSrcHttpBaseFile(path)
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *ProtocolGenImpl) CreateProtocolSrcHandler(dto ProtocolDto) error {
+	var err error
+
+	if dto.ProtocolType.NotEmpty() {
+		path := utils.ConcatDirPath(dto.Path, dto.ProtocolType.ToString())
+
+		if !s.fs.IsFolderExists(path) {
+			s.fs.CreateFolderIfNotExists(path)
+		}
+
+		switch dto.ProtocolType {
+		case Http:
+			err = s.httpProtocol.CreateProtocolSrcHttpHandler(path, dto.Name)
 		}
 
 		if err != nil {

@@ -72,13 +72,37 @@ func (s CliImpl) CreateNewCliApp() {
 					Usage: "Path of projects",
 				},
 				&cli.BoolFlag{
-					Name:  "domain-full-creational",
-					Value: true,
-					Usage: "To create full domain",
+					Name:    "create-only-folder",
+					Aliases: []string{"cof"},
+					Usage:   "To only domain folder",
 				},
 			},
 			Action: func(ctx *cli.Context) error {
 				return s.clirouter.CreateNewDomain(ctx, path)
+			},
+		},
+		{
+			Name:        "handler",
+			Description: "Make a new handler",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:  "name",
+					Value: "",
+					Usage: "domain name",
+				},
+				&cli.StringFlag{
+					Name:  "path",
+					Value: "",
+					Usage: "Path of projects",
+				},
+				&cli.StringFlag{
+					Name:  "protocol-type",
+					Value: "",
+					Usage: "define what is the handler's protocol type such as (http, grpc, or empty)",
+				},
+			},
+			Action: func(ctx *cli.Context) error {
+				return s.clirouter.CreateNewHandler(ctx, path)
 			},
 		},
 	}

@@ -21,9 +21,9 @@ type ProtocolHttpGen interface {
 	createProtocolInternalHttpFile(path string) error
 	createInternalHttpRouteDir(path string) error
 	createInternalHttpRouteFile(path string) error
-	// Under Src dir
+	CreateProtocolSrcHttpBaseFile(path string) error
 	CreateProtocolInternalHttp(path string) error
-	CreateProtocolSrcHttp(path string) error
+	CreateProtocolSrcHttpHandler(path string, name string) error
 }
 
 type ProtocolHttpGenImpl struct {
@@ -421,7 +421,7 @@ func (s *ProtocolHttpGenImpl) CreateProtocolInternalHttp(path string) error {
 }
 
 // create src/http directory and the assets
-func (s *ProtocolHttpGenImpl) CreateProtocolSrcHttp(path string) error {
+func (s *ProtocolHttpGenImpl) CreateProtocolSrcHttpBaseFile(path string) error {
 	templateNew := templates.NewTemplateNewImpl("http", "")
 	templateCode, err := templateNew.Render("", nil)
 	if err != nil {
@@ -477,5 +477,22 @@ func (s *ProtocolHttpGenImpl) CreateProtocolSrcHttp(path string) error {
 	if !s.fs.IsFileExists(utils.ConcatDirPath(path, baseHandlerFile)) {
 		s.fs.CreateFileIfNotExists(path, baseHandlerFile, templateBaseFileString)
 	}
+	return nil
+}
+
+func (s ProtocolHttpGenImpl) CreateProtocolSrcHttpHandler(path string, name string) error {
+	if exist := s.fs.IsFileExists(utils.ConcatDirPath(path, "http_handler.go")); !exist {
+		s.CreateProtocolSrcHttpBaseFile(path)
+	}
+	template := templates.NewTemplateNewImpl("http", "")
+	templateCode, err := template.Render("", nil)
+	if err != nil {
+		return err
+	}
+
+	if !s.fs.IsFileExists(utils.ConcatDirPath(path, name)) {
+		s.fs.CreateFileIfNotExists(path, fmt.Sprintf("%s.go", name), templateCode)
+	}
+
 	return nil
 }
