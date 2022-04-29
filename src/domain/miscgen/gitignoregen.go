@@ -16,7 +16,6 @@ type GitIgnoreGenImpl struct {
 
 func NewGitignore(fs database.FileSystem) *GitIgnoreGenImpl {
 	return &GitIgnoreGenImpl{
-		// ProjectPath: projectPath,
 		fs: fs,
 	}
 }

@@ -24,9 +24,6 @@ func NewInfrastructureGen(
 	dbGen dbgen.DatabaseGen,
 	fs database.FileSystem,
 ) *InfrastructureGenImpl {
-	// infrastructurePath := utils.ConcatDirPath(projectPath, "infrastructure")
-	// appName := utils.GetAppNameBasedOnGoMod(gomodName)
-
 	return &InfrastructureGenImpl{
 		cacheGen: cacheGen,
 		dbGen:    dbGen,

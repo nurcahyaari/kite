@@ -21,14 +21,9 @@ type WireGenImpl struct {
 
 func NewWire(
 	fs database.FileSystem,
-	// projectPath string,
-	// gomodName string,
 ) *WireGenImpl {
 	return &WireGenImpl{
 		fs: fs,
-		// ProjectPath: projectPath,
-		// GomodName:   gomodName,
-		// fs:          database.NewFileSystem(projectPath),
 	}
 }
 

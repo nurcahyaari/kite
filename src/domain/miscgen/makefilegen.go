@@ -17,7 +17,6 @@ func NewMakefile(
 	fs database.FileSystem,
 ) *MakefileGenImpl {
 	return &MakefileGenImpl{
-		// ProjectPath: projectPath,
 		fs: fs,
 	}
 }

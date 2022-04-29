@@ -54,7 +54,6 @@ func (s CliRouterImpl) CreateNewApps(ctx *cli.Context, path string) error {
 }
 
 func (s CliRouterImpl) CreateNewDomain(ctx *cli.Context, path string) error {
-	// var err error
 	if ctx.String("path") != "" {
 		path = fmt.Sprintf("%s/", ctx.String("path"))
 	}

@@ -36,7 +36,6 @@ func (s *UtilGenImpl) CreateUtilDir(dto UtilDto) error {
 
 func (s *UtilGenImpl) CreateUtilDefaultFile(dto UtilDto) error {
 	// create empty utils file
-	// temp
 	return nil
 }
 
