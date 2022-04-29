@@ -36,6 +36,7 @@ func (s DomainGenImpl) CreateNewDomain(dto DomainNewDto) error {
 	err := s.domainGen.CreateDomain(domaingen.DomainDto{
 		Name:                 dto.Name,
 		Path:                 domainPath,
+		ProjectPath:          dto.ProjectPath,
 		GomodName:            dto.GoModName,
 		DomainCreationalType: domaingen.NewDomainCreationalType(domainCreationalType),
 	})

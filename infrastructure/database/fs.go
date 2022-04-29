@@ -1,8 +1,10 @@
 package database
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 
@@ -40,6 +42,8 @@ type FileSystem interface {
 	CreateFileIfNotExists(path string, fileName string, fileTemplate string) error
 	DeleteFolder(path string) error
 	DeleteFile(path string) error
+	ReadFile(path string) (string, error)
+	ReadFolderList(path string) ([]string, error)
 	ReplaceFile(path string, fileName string, fileTemplate string) error
 	CommandExec(path string, name string, args ...string) error
 	writeStringToFile(fileTemplate string, file *os.File) error
@@ -126,9 +130,43 @@ func (f FileSystemImpl) CreateFileIfNotExists(path string, fileName string, file
 	return nil
 }
 
-func (f FileSystemImpl) ReplaceFile(path string, fileName string, fileTemplate string) error {
+func (f FileSystemImpl) ReadFile(path string) (string, error) {
+	var fileValue string
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
 
-	err := f.DeleteFile(path)
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		fileValue += fmt.Sprintf("%s\n", scanner.Text())
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return fileValue, nil
+}
+
+func (f FileSystemImpl) ReadFolderList(path string) ([]string, error) {
+	var dirList []string
+	fileInfo, err := ioutil.ReadDir(path)
+	if err != nil {
+		return dirList, err
+	}
+
+	for _, file := range fileInfo {
+		if file.IsDir() {
+			dirList = append(dirList, file.Name())
+		}
+	}
+	return dirList, nil
+}
+
+func (f FileSystemImpl) ReplaceFile(path string, fileName string, fileTemplate string) error {
+	err := f.DeleteFile(utils.ConcatDirPath(path, fileName))
 	if err != nil {
 		return err
 	}

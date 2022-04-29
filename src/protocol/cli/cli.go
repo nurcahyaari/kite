@@ -18,20 +18,14 @@ type CliRouter interface {
 }
 
 type CliRouterImpl struct {
-	appGen     generator.AppGenNew
-	domainGen  generator.DomainGen
-	handlerGen generator.HandlerGen
+	appGenerator generator.AppGenerator
 }
 
 func NewCliRouter(
-	appGen generator.AppGenNew,
-	domainGen generator.DomainGen,
-	handlerGen generator.HandlerGen,
+	appGenerator generator.AppGenerator,
 ) *CliRouterImpl {
 	return &CliRouterImpl{
-		appGen:     appGen,
-		domainGen:  domainGen,
-		handlerGen: handlerGen,
+		appGenerator: appGenerator,
 	}
 }
 
@@ -54,7 +48,7 @@ func (s CliRouterImpl) CreateNewApps(ctx *cli.Context, path string) error {
 		return err
 	}
 
-	err := s.appGen.CreateNewApp(dto)
+	err := s.appGenerator.CreateNewApp(dto)
 
 	return err
 }
@@ -81,7 +75,7 @@ func (s CliRouterImpl) CreateNewDomain(ctx *cli.Context, path string) error {
 		return err
 	}
 
-	err := s.domainGen.CreateNewDomain(domainDto)
+	err := s.appGenerator.CreateNewDomain(domainDto)
 
 	return err
 }
@@ -109,7 +103,7 @@ func (s CliRouterImpl) CreateNewHandler(ctx *cli.Context, path string) error {
 		return err
 	}
 
-	err := s.handlerGen.CreateNewHandler(handlerDto)
+	err := s.appGenerator.CreateNewHandler(handlerDto)
 
 	return err
 }

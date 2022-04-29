@@ -26,6 +26,7 @@ func NewDomainCreationalType(t string) DomainCreationalType {
 type DomainDto struct {
 	Name                 string
 	Path                 string
+	ProjectPath          string
 	GomodName            string
 	DomainCreationalType DomainCreationalType
 }

@@ -11,8 +11,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/configgen"
 	"github.com/nurcahyaari/kite/src/domain/dbgen"
 	"github.com/nurcahyaari/kite/src/domain/domaingen"
-	// "github.com/nurcahyaari/kite/src/domain/domaingen/repositorygen"
-	// "github.com/nurcahyaari/kite/src/domain/domaingen/servicegen"
+	"github.com/nurcahyaari/kite/src/domain/emptygen"
 	"github.com/nurcahyaari/kite/src/domain/envgen"
 	"github.com/nurcahyaari/kite/src/domain/generator"
 	"github.com/nurcahyaari/kite/src/domain/handlergen"
@@ -22,7 +21,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/internalgen/utilsgen"
 	"github.com/nurcahyaari/kite/src/domain/modulegen"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen"
-	"github.com/nurcahyaari/kite/src/domain/protocolgen/protocolhttpgen"
+	"github.com/nurcahyaari/kite/src/domain/protocolgen/protocoltype"
 	"github.com/nurcahyaari/kite/src/domain/srcgen"
 	"github.com/nurcahyaari/kite/src/domain/wiregen"
 	clirouter "github.com/nurcahyaari/kite/src/protocol/cli"
@@ -52,6 +51,14 @@ var envGen = wire.NewSet(
 	wire.Bind(
 		new(envgen.EnvGen),
 		new(*envgen.EnvGenImpl),
+	),
+)
+
+var emptyGen = wire.NewSet(
+	emptygen.NewEmptyGen,
+	wire.Bind(
+		new(emptygen.EmptyGen),
+		new(*emptygen.EmptyGenImpl),
 	),
 )
 
@@ -119,11 +126,11 @@ var infrastructureGen = wire.NewSet(
 	),
 )
 
-var protocolHttpGen = wire.NewSet(
-	protocolhttpgen.NewProtocolHttp,
+var protocolType = wire.NewSet(
+	protocoltype.NewProtocolType,
 	wire.Bind(
-		new(protocolhttpgen.ProtocolHttpGen),
-		new(*protocolhttpgen.ProtocolHttpGenImpl),
+		new(protocoltype.ProtocolType),
+		new(*protocoltype.ProtocolTypeImpl),
 	),
 )
 
@@ -142,22 +149,6 @@ var srcGen = wire.NewSet(
 		new(*srcgen.SrcGenImpl),
 	),
 )
-
-// var repositoryGen = wire.NewSet(
-// 	repositorygen.NewRepositoryGen,
-// 	wire.Bind(
-// 		new(repositorygen.RepositoryGen),
-// 		new(*repositorygen.RepositoryGenImpl),
-// 	),
-// )
-
-// var serviceGen = wire.NewSet(
-// 	servicegen.NewServiceGen,
-// 	wire.Bind(
-// 		new(servicegen.ServiceGen),
-// 		new(*servicegen.ServiceGenImpl),
-// 	),
-// )
 
 var domainGen = wire.NewSet(
 	domaingen.NewDomainGen,
@@ -183,27 +174,11 @@ var handlerGen = wire.NewSet(
 	),
 )
 
-var appGen = wire.NewSet(
-	generator.NewApp,
+var appGenerator = wire.NewSet(
+	generator.NewAppGenerator,
 	wire.Bind(
-		new(generator.AppGenNew),
-		new(*generator.AppGenNewImpl),
-	),
-)
-
-var domainCreatorGen = wire.NewSet(
-	generator.NewDomainGen,
-	wire.Bind(
-		new(generator.DomainGen),
-		new(*generator.DomainGenImpl),
-	),
-)
-
-var handlerCreatorGen = wire.NewSet(
-	generator.NewHandlerGen,
-	wire.Bind(
-		new(generator.HandlerGen),
-		new(*generator.HandlerGenImpl),
+		new(generator.AppGenerator),
+		new(*generator.AppGeneratorImpl),
 	),
 )
 
@@ -225,6 +200,7 @@ func InitCliApp() *cli.CliImpl {
 		configGen,
 		wireGen,
 		envGen,
+		emptyGen,
 		loggerGen,
 		encryptionGen,
 		utilGen,
@@ -233,15 +209,11 @@ func InitCliApp() *cli.CliImpl {
 		infrastructureGen,
 		internalGen,
 		protocolGen,
-		protocolHttpGen,
+		protocolType,
 		srcGen,
 		handlerGen,
-		// repositoryGen,
-		// serviceGen,
 		domainGen,
-		appGen,
-		domainCreatorGen,
-		handlerCreatorGen,
+		appGenerator,
 		cliApp,
 		cliRouter,
 		cli.NewCliApp,

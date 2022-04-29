@@ -5,4 +5,5 @@ type ProtocolDto struct {
 	Name         string
 	Path         string
 	GomodName    string
+	DomainName   string
 }

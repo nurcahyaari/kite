@@ -1,4 +1,4 @@
-package protocolhttpgen
+package protocoltype
 
 import (
 	"fmt"
@@ -9,46 +9,48 @@ import (
 	"github.com/nurcahyaari/kite/internal/templates/protocoltemplate/httptemplate/chitemplate"
 	"github.com/nurcahyaari/kite/internal/utils"
 	"github.com/nurcahyaari/kite/internal/utils/ast"
+	"github.com/nurcahyaari/kite/src/domain/emptygen"
 )
 
 type ProtocolHttpGen interface {
-	createInternalHttpErrorDir(path string) error
-	createInternalErrorHttpFile(path string) error
-	createInternalHttpMiddlewareDir(path string) error
-	createInternalMiddlewareHttpFile(path string) error
-	createInternalHttpResponseDir(path string) error
-	createInternalHttpResponseFile(path string) error
-	createProtocolInternalHttpFile(path string) error
-	createInternalHttpRouteDir(path string) error
-	createInternalHttpRouteFile(path string) error
-	CreateProtocolSrcHttpBaseFile(path string) error
-	CreateProtocolInternalHttp(path string) error
-	CreateProtocolSrcHttpHandler(path string, name string) error
+	createInternalHttpErrorDir(dto ProtocolDto) error
+	createInternalErrorHttpFile(dto ProtocolDto) error
+	createInternalHttpMiddlewareDir(dto ProtocolDto) error
+	createInternalMiddlewareHttpFile(dto ProtocolDto) error
+	createInternalHttpResponseDir(dto ProtocolDto) error
+	createInternalHttpResponseFile(dto ProtocolDto) error
+	createProtocolInternalHttpFile(dto ProtocolDto) error
+	createInternalHttpRouteDir(dto ProtocolDto) error
+	createInternalHttpRouteFile(dto ProtocolDto) error
+	CreateProtocolSrcHttpBaseFile(dto ProtocolDto) error
+	CreateProtocolInternalHttp(dto ProtocolDto) error
+	CreateProtocolSrcHttpHandler(dto ProtocolDto) error
 }
 
 type ProtocolHttpGenImpl struct {
-	Path      string
-	GomodName string
-	fs        database.FileSystem
+	fs       database.FileSystem
+	emptyGen emptygen.EmptyGen
 }
 
 func NewProtocolHttp(
 	fs database.FileSystem,
+	emptyGen emptygen.EmptyGen,
 ) *ProtocolHttpGenImpl {
 	return &ProtocolHttpGenImpl{
-		fs: fs,
+		fs:       fs,
+		emptyGen: emptyGen,
 	}
 }
 
 // create internal/http/error/ directory
-func (s *ProtocolHttpGenImpl) createInternalHttpErrorDir(path string) error {
-	path = utils.ConcatDirPath(path, "errors")
-	err := s.fs.CreateFolderIfNotExists(path)
+func (s *ProtocolHttpGenImpl) createInternalHttpErrorDir(dto ProtocolDto) error {
+	dto.Path = utils.ConcatDirPath(dto.Path, "errors")
+	err := s.fs.CreateFolderIfNotExists(dto.Path)
 	if err != nil {
 		return err
 	}
 
-	err = s.createInternalErrorHttpFile(path)
+	err = s.createInternalErrorHttpFile(dto)
 	if err != nil {
 		return err
 	}
@@ -57,7 +59,7 @@ func (s *ProtocolHttpGenImpl) createInternalHttpErrorDir(path string) error {
 }
 
 // create internal/http/error/error.go file
-func (s *ProtocolHttpGenImpl) createInternalErrorHttpFile(path string) error {
+func (s *ProtocolHttpGenImpl) createInternalErrorHttpFile(dto ProtocolDto) error {
 	errorTemplate := chitemplate.NewErrorTemplate()
 	errorTemplateString, err := errorTemplate.Render()
 	if err != nil {
@@ -81,20 +83,20 @@ func (s *ProtocolHttpGenImpl) createInternalErrorHttpFile(path string) error {
 
 	errorTemplateString = abstractCode.GetCode()
 
-	s.fs.CreateFileIfNotExists(path, "error.go", errorTemplateString)
+	s.fs.CreateFileIfNotExists(dto.Path, "error.go", errorTemplateString)
 
 	return nil
 }
 
 // create internal/http/middleware/ directory
-func (s *ProtocolHttpGenImpl) createInternalHttpMiddlewareDir(path string) error {
-	path = utils.ConcatDirPath(path, "middleware")
-	err := s.fs.CreateFolderIfNotExists(path)
+func (s *ProtocolHttpGenImpl) createInternalHttpMiddlewareDir(dto ProtocolDto) error {
+	dto.Path = utils.ConcatDirPath(dto.Path, "middleware")
+	err := s.fs.CreateFolderIfNotExists(dto.Path)
 	if err != nil {
 		return err
 	}
 
-	err = s.createInternalMiddlewareHttpFile(path)
+	err = s.createInternalMiddlewareHttpFile(dto)
 	if err != nil {
 		return err
 	}
@@ -103,7 +105,7 @@ func (s *ProtocolHttpGenImpl) createInternalHttpMiddlewareDir(path string) error
 }
 
 // create internal/http/middleware/middleware.go file
-func (s *ProtocolHttpGenImpl) createInternalMiddlewareHttpFile(path string) error {
+func (s *ProtocolHttpGenImpl) createInternalMiddlewareHttpFile(dto ProtocolDto) error {
 	middlewareTemplate := chitemplate.NewMiddlewareTemplate()
 	middlewareTemplateString, err := middlewareTemplate.Render()
 	if err != nil {
@@ -115,26 +117,23 @@ func (s *ProtocolHttpGenImpl) createInternalMiddlewareHttpFile(path string) erro
 		Path: "\"fmt\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
-		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(s.GomodName, "config")),
-	})
-	abstractCode.AddImport(ast.ImportSpec{
 		Path: "\"net/http\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
 		Path: "\"strings\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
+		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(dto.GomodName, "config")),
+	})
+	abstractCode.AddImport(ast.ImportSpec{
 		Path: "\"time\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
-		Path: "\"net/http\"",
-	})
-	abstractCode.AddImport(ast.ImportSpec{
 		Name: "httpresponse",
-		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(s.GomodName, "internal/protocol/http/response")),
+		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(dto.GomodName, "internal/protocols/http/response")),
 	})
 	abstractCode.AddImport(ast.ImportSpec{
-		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(s.GomodName, "internal/utils/encryption")),
+		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(dto.GomodName, "internal/utils/encryption")),
 	})
 	abstractCode.AddImport(ast.ImportSpec{
 		Path: "\"github.com/golang-jwt/jwt\"",
@@ -152,20 +151,20 @@ func (s *ProtocolHttpGenImpl) createInternalMiddlewareHttpFile(path string) erro
 
 	middlewareTemplateString = abstractCode.GetCode()
 
-	s.fs.CreateFileIfNotExists(path, "jwt.go", middlewareTemplateString)
+	s.fs.CreateFileIfNotExists(dto.Path, "jwt.go", middlewareTemplateString)
 
 	return nil
 }
 
 // create internal/http/response/ directory
-func (s *ProtocolHttpGenImpl) createInternalHttpResponseDir(path string) error {
-	path = utils.ConcatDirPath(path, "response")
-	err := s.fs.CreateFolderIfNotExists(path)
+func (s *ProtocolHttpGenImpl) createInternalHttpResponseDir(dto ProtocolDto) error {
+	dto.Path = utils.ConcatDirPath(dto.Path, "response")
+	err := s.fs.CreateFolderIfNotExists(dto.Path)
 	if err != nil {
 		return err
 	}
 
-	err = s.createInternalHttpResponseFile(path)
+	err = s.createInternalHttpResponseFile(dto)
 	if err != nil {
 		return err
 	}
@@ -174,7 +173,7 @@ func (s *ProtocolHttpGenImpl) createInternalHttpResponseDir(path string) error {
 }
 
 // create internal/http/response/response.go file
-func (s *ProtocolHttpGenImpl) createInternalHttpResponseFile(path string) error {
+func (s *ProtocolHttpGenImpl) createInternalHttpResponseFile(dto ProtocolDto) error {
 	responseTemplate := chitemplate.NewResponseTemplate()
 	responseTemplateString, err := responseTemplate.Render()
 	if err != nil {
@@ -190,7 +189,7 @@ func (s *ProtocolHttpGenImpl) createInternalHttpResponseFile(path string) error 
 	})
 	abstractCode.AddImport(ast.ImportSpec{
 		Name: "httperror",
-		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(s.GomodName, "internal/protocol/http/errors")),
+		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(dto.GomodName, "internal/protocols/http/errors")),
 	})
 	err = abstractCode.RebuildCode()
 	if err != nil {
@@ -199,20 +198,20 @@ func (s *ProtocolHttpGenImpl) createInternalHttpResponseFile(path string) error 
 
 	responseTemplateString = abstractCode.GetCode()
 
-	s.fs.CreateFileIfNotExists(path, "response.go", responseTemplateString)
+	s.fs.CreateFileIfNotExists(dto.Path, "response.go", responseTemplateString)
 
 	return nil
 }
 
 // create internal/http/router/ directory
-func (s *ProtocolHttpGenImpl) createInternalHttpRouteDir(path string) error {
-	path = utils.ConcatDirPath(path, "router")
-	err := s.fs.CreateFolderIfNotExists(path)
+func (s *ProtocolHttpGenImpl) createInternalHttpRouteDir(dto ProtocolDto) error {
+	dto.Path = utils.ConcatDirPath(dto.Path, "router")
+	err := s.fs.CreateFolderIfNotExists(dto.Path)
 	if err != nil {
 		return err
 	}
 
-	err = s.createInternalHttpRouteFile(path)
+	err = s.createInternalHttpRouteFile(dto)
 	if err != nil {
 		return err
 	}
@@ -221,7 +220,7 @@ func (s *ProtocolHttpGenImpl) createInternalHttpRouteDir(path string) error {
 }
 
 // create internal/http/router/route.go file
-func (s *ProtocolHttpGenImpl) createInternalHttpRouteFile(path string) error {
+func (s *ProtocolHttpGenImpl) createInternalHttpRouteFile(dto ProtocolDto) error {
 	templateNew := chitemplate.NewInternalHttpRouterTemplate()
 	templateCode, err := templateNew.Render()
 	if err != nil {
@@ -287,7 +286,7 @@ func (s *ProtocolHttpGenImpl) createInternalHttpRouteFile(path string) error {
 		Path: "\"github.com/swaggo/http-swagger\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
-		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(s.GomodName, "src/handler/http")),
+		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(dto.GomodName, "src/handlers/http")),
 	})
 	err = abstractCode.RebuildCode()
 	if err != nil {
@@ -295,7 +294,7 @@ func (s *ProtocolHttpGenImpl) createInternalHttpRouteFile(path string) error {
 	}
 	templateCode = abstractCode.GetCode()
 
-	err = s.fs.CreateFileIfNotExists(path, "route.go", templateCode)
+	err = s.fs.CreateFileIfNotExists(dto.Path, "route.go", templateCode)
 	if err != nil {
 		return nil
 	}
@@ -304,7 +303,7 @@ func (s *ProtocolHttpGenImpl) createInternalHttpRouteFile(path string) error {
 }
 
 // create internal/http/http.go file
-func (s *ProtocolHttpGenImpl) createProtocolInternalHttpFile(path string) error {
+func (s *ProtocolHttpGenImpl) createProtocolInternalHttpFile(dto ProtocolDto) error {
 	internalHttpTemplate := chitemplate.NewInternalHttpTemplate()
 	internalHttpTemplateString, err := internalHttpTemplate.Render()
 	if err != nil {
@@ -369,10 +368,10 @@ func (s *ProtocolHttpGenImpl) createProtocolInternalHttpFile(path string) error 
 		Path: "\"github.com/go-chi/chi/v5\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
-		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(s.GomodName, "config")),
+		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(dto.GomodName, "config")),
 	})
 	abstractCode.AddImport(ast.ImportSpec{
-		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(s.GomodName, "internal/protocol/http/router")),
+		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(dto.GomodName, "internal/protocols/http/router")),
 	})
 	err = abstractCode.RebuildCode()
 	if err != nil {
@@ -380,7 +379,7 @@ func (s *ProtocolHttpGenImpl) createProtocolInternalHttpFile(path string) error 
 	}
 	templateBaseFileString := abstractCode.GetCode()
 
-	err = s.fs.CreateFileIfNotExists(path, fmt.Sprintf("%s.go", "http"), templateBaseFileString)
+	err = s.fs.CreateFileIfNotExists(dto.Path, fmt.Sprintf("%s.go", "http"), templateBaseFileString)
 	if err != nil {
 		return nil
 	}
@@ -389,30 +388,30 @@ func (s *ProtocolHttpGenImpl) createProtocolInternalHttpFile(path string) error 
 }
 
 // create internal/http directory and all of the assets
-func (s *ProtocolHttpGenImpl) CreateProtocolInternalHttp(path string) error {
+func (s *ProtocolHttpGenImpl) CreateProtocolInternalHttp(dto ProtocolDto) error {
 	var err error
 
-	err = s.createInternalHttpErrorDir(path)
+	err = s.createInternalHttpErrorDir(dto)
 	if err != nil {
 		return err
 	}
 
-	err = s.createInternalHttpMiddlewareDir(path)
+	err = s.createInternalHttpMiddlewareDir(dto)
 	if err != nil {
 		return err
 	}
 
-	err = s.createInternalHttpResponseDir(path)
+	err = s.createInternalHttpResponseDir(dto)
 	if err != nil {
 		return err
 	}
 
-	err = s.createInternalHttpRouteDir(path)
+	err = s.createInternalHttpRouteDir(dto)
 	if err != nil {
 		return err
 	}
 
-	err = s.createProtocolInternalHttpFile(path)
+	err = s.createProtocolInternalHttpFile(dto)
 	if err != nil {
 		return err
 	}
@@ -421,7 +420,7 @@ func (s *ProtocolHttpGenImpl) CreateProtocolInternalHttp(path string) error {
 }
 
 // create src/http directory and the assets
-func (s *ProtocolHttpGenImpl) CreateProtocolSrcHttpBaseFile(path string) error {
+func (s *ProtocolHttpGenImpl) CreateProtocolSrcHttpBaseFile(dto ProtocolDto) error {
 	templateNew := templates.NewTemplateNewImpl("http", "")
 	templateCode, err := templateNew.Render("", nil)
 	if err != nil {
@@ -474,25 +473,20 @@ func (s *ProtocolHttpGenImpl) CreateProtocolSrcHttpBaseFile(path string) error {
 	templateBaseFileString := abstractCode.GetCode()
 
 	baseHandlerFile := "http_handler.go"
-	if !s.fs.IsFileExists(utils.ConcatDirPath(path, baseHandlerFile)) {
-		s.fs.CreateFileIfNotExists(path, baseHandlerFile, templateBaseFileString)
+	if !s.fs.IsFileExists(utils.ConcatDirPath(dto.Path, baseHandlerFile)) {
+		s.fs.CreateFileIfNotExists(dto.Path, baseHandlerFile, templateBaseFileString)
 	}
 	return nil
 }
 
-func (s ProtocolHttpGenImpl) CreateProtocolSrcHttpHandler(path string, name string) error {
-	if exist := s.fs.IsFileExists(utils.ConcatDirPath(path, "http_handler.go")); !exist {
-		s.CreateProtocolSrcHttpBaseFile(path)
-	}
-	template := templates.NewTemplateNewImpl("http", "")
-	templateCode, err := template.Render("", nil)
-	if err != nil {
-		return err
+func (s ProtocolHttpGenImpl) CreateProtocolSrcHttpHandler(dto ProtocolDto) error {
+	if exist := s.fs.IsFileExists(utils.ConcatDirPath(dto.Path, "http_handler.go")); !exist {
+		s.CreateProtocolSrcHttpBaseFile(dto)
 	}
 
-	if !s.fs.IsFileExists(utils.ConcatDirPath(path, name)) {
-		s.fs.CreateFileIfNotExists(path, fmt.Sprintf("%s.go", name), templateCode)
-	}
-
-	return nil
+	return s.emptyGen.CreateEmptyGolangFile(emptygen.EmptyDto{
+		Path:        dto.Path,
+		FileName:    dto.Name,
+		PackageName: "http",
+	})
 }

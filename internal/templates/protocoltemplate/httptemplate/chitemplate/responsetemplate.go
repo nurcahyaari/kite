@@ -18,7 +18,7 @@ type ResponseTemplateImpl struct {
 }
 
 func NewResponseTemplate() ResponseTemplate {
-	template := templates.NewTemplateNewImpl("Response", responseTemplateLoc)
+	template := templates.NewTemplateNewImpl("response", responseTemplateLoc)
 	return &ResponseTemplateImpl{
 		TemplateNewImpl: template,
 	}

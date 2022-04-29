@@ -6,6 +6,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/domaingen/repositorygen"
 	"github.com/nurcahyaari/kite/src/domain/domaingen/servicegen"
 	"github.com/nurcahyaari/kite/src/domain/modulegen"
+	"github.com/nurcahyaari/kite/src/domain/protocolgen"
 )
 
 type DomainGen interface {
@@ -25,11 +26,12 @@ type DomainGenImpl struct {
 func NewDomainGen(
 	fs database.FileSystem,
 	moduleGen modulegen.ModuleGen,
+	protocolGen protocolgen.ProtocolGen,
 ) *DomainGenImpl {
 	return &DomainGenImpl{
 		fs:                fs,
 		RepositoryGenImpl: repositorygen.NewRepositoryGen(fs, moduleGen),
-		ServiceGenImpl:    servicegen.NewServiceGen(fs, moduleGen),
+		ServiceGenImpl:    servicegen.NewServiceGen(fs, moduleGen, protocolGen),
 	}
 }
 
@@ -57,14 +59,23 @@ func (s DomainGenImpl) createDomainFull(dto DomainDto) error {
 		Path:      repoPath,
 		GomodName: dto.GomodName,
 	}
-	s.RepositoryGenImpl.CreateRepository(repoDto)
+	err := s.RepositoryGenImpl.CreateRepository(repoDto)
+	if err != nil {
+		return err
+	}
 
 	serviceDto := servicegen.ServiceDto{
-		Path:       servicePath,
-		GomodName:  dto.GomodName,
-		DomainName: dto.Name,
+		Path:              servicePath,
+		ProjectPath:       dto.ProjectPath,
+		GomodName:         dto.GomodName,
+		DomainName:        dto.Name,
+		IsInjectRepo:      true,
+		IsInjectToHandler: true,
 	}
-	s.ServiceGenImpl.CreateService(serviceDto)
+	err = s.ServiceGenImpl.CreateService(serviceDto)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
