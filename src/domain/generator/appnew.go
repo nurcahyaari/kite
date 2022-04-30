@@ -84,6 +84,30 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 	infrastructurePath := utils.ConcatDirPath(dto.ProjectPath, "infrastructure")
 	srcPath := utils.ConcatDirPath(dto.ProjectPath, "src")
 
+	// create file in project path dir level
+	err = s.envGen.CreateEnvFile(dto.ProjectPath)
+	if err != nil {
+		return err
+	}
+
+	err = s.envGen.CreateEnvExampleFile(dto.ProjectPath)
+	if err != nil {
+		return err
+	}
+
+	err = s.wireGen.CreateWireFiles(wiregen.WireDto{
+		ProjectPath: dto.ProjectPath,
+		GomodName:   dto.GoModName,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = s.createMainApp(dto)
+	if err != nil {
+		return err
+	}
+
 	// create config module
 	configGenDto := configgen.ConfigDto{
 		ConfigPath: configPath,
@@ -137,20 +161,6 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 		ProtocolType: protocolgen.NewProtocolType(dto.ProtocolType),
 	}
 	err = s.srcGen.CreateSrcDirectory(srcDto)
-	if err != nil {
-		return err
-	}
-
-	// create file in project path dir level
-	s.envGen.CreateEnvFile(dto.ProjectPath)
-	s.envGen.CreateEnvExampleFile(dto.ProjectPath)
-
-	s.wireGen.CreateWireFiles(wiregen.WireDto{
-		ProjectPath: dto.ProjectPath,
-		GomodName:   dto.GoModName,
-	})
-
-	err = s.createMainApp(dto)
 	if err != nil {
 		return err
 	}

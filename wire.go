@@ -10,6 +10,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/cachegen"
 	"github.com/nurcahyaari/kite/src/domain/configgen"
 	"github.com/nurcahyaari/kite/src/domain/dbgen"
+	"github.com/nurcahyaari/kite/src/domain/dbgen/databasetype"
 	"github.com/nurcahyaari/kite/src/domain/domaingen"
 	"github.com/nurcahyaari/kite/src/domain/emptygen"
 	"github.com/nurcahyaari/kite/src/domain/envgen"
@@ -110,6 +111,14 @@ var dbGen = wire.NewSet(
 	),
 )
 
+var mysqlGen = wire.NewSet(
+	databasetype.NewMysqlGen,
+	wire.Bind(
+		new(databasetype.MysqlGen),
+		new(*databasetype.MysqlGenImpl),
+	),
+)
+
 var cacheGen = wire.NewSet(
 	cachegen.NewCacheGen,
 	wire.Bind(
@@ -205,6 +214,7 @@ func InitCliApp() *cli.CliImpl {
 		encryptionGen,
 		utilGen,
 		cacheGen,
+		mysqlGen,
 		dbGen,
 		infrastructureGen,
 		internalGen,

@@ -1,65 +1,34 @@
 package dbgen
 
 import (
-	"fmt"
-	"go/parser"
-
 	"github.com/nurcahyaari/kite/infrastructure/database"
 	"github.com/nurcahyaari/kite/internal/logger"
-	"github.com/nurcahyaari/kite/internal/templates/infrastructuretemplate/databasetemplate"
-	"github.com/nurcahyaari/kite/internal/utils/ast"
+	"github.com/nurcahyaari/kite/src/domain/dbgen/databasetype"
 )
-
-type DbType int
-
-const (
-	DbMysql DbType = iota
-)
-
-const (
-	MysqlCode string = "mysql"
-)
-
-func (s DbType) ToDatabaseTemplateType() databasetemplate.DatabaseType {
-	var dbType databasetemplate.DatabaseType
-	switch s {
-	case DbMysql:
-		dbType = databasetemplate.DatabaseMysql
-	}
-	return dbType
-}
-
-func (s DbType) ToString() string {
-	var dbType string
-	switch s {
-	case DbMysql:
-		dbType = MysqlCode
-	}
-	return dbType
-}
 
 type DatabaseGen interface {
-	CreateDatabaseDir(option DBOption) error
-	CreateMysqlConnection(option DBOption) error
+	CreateDatabaseDir(dto DatabaseDto) error
+	CreateDatabaseConnection(dto DatabaseDto) error
 }
 
 type DatabaseGenImpl struct {
-	fs database.FileSystem
+	fs       database.FileSystem
+	mysqlGen databasetype.MysqlGen
 }
 
 func NewDatabaseGen(
 	fs database.FileSystem,
+	mysqlGen databasetype.MysqlGen,
 ) *DatabaseGenImpl {
-	// dbGenImpl.DatabasePath = utils.ConcatDirPath(dbGenImpl.InfrastructurePath, "database")
-	// dbGenImpl.fs = database.NewFileSystem(dbGenImpl.DatabasePath)
 	return &DatabaseGenImpl{
-		fs: fs,
+		fs:       fs,
+		mysqlGen: mysqlGen,
 	}
 }
 
-func (s *DatabaseGenImpl) CreateDatabaseDir(option DBOption) error {
+func (s DatabaseGenImpl) CreateDatabaseDir(dto DatabaseDto) error {
 	logger.Info("Creating infrastructure/database directory... ")
-	err := s.fs.CreateFolderIfNotExists(option.DatabasePath)
+	err := s.fs.CreateFolderIfNotExists(dto.DatabasePath)
 	if err != nil {
 		return err
 	}
@@ -68,43 +37,11 @@ func (s *DatabaseGenImpl) CreateDatabaseDir(option DBOption) error {
 	return nil
 }
 
-func (s *DatabaseGenImpl) CreateMysqlConnection(option DBOption) error {
-	templateNew := databasetemplate.NewDatabaseTemplate(databasetemplate.DatabaseTemplateData{
-		DatabaseType: option.DatabaseType.ToDatabaseTemplateType(),
-	})
-	databaseTemplate, err := templateNew.Render()
-	if err != nil {
-		return err
+func (s DatabaseGenImpl) CreateDatabaseConnection(dto DatabaseDto) error {
+	var err error
+	switch dto.DatabaseType {
+	case DbMysql:
+		err = s.mysqlGen.CreateMysqlConnection()
 	}
-
-	databaseAbstractCode := ast.NewAbstractCode(databaseTemplate, parser.ParseComments)
-	databaseAbstractCode.AddImport(ast.ImportSpec{
-		Path: "\"fmt\"",
-	})
-	databaseAbstractCode.AddImport(ast.ImportSpec{
-		Path: fmt.Sprintf("\"%s/config\"", option.GomodName),
-	})
-	databaseAbstractCode.AddImport(ast.ImportSpec{
-		Name: "_",
-		Path: "\"github.com/go-sql-driver/mysql\"",
-	})
-	databaseAbstractCode.AddImport(ast.ImportSpec{
-		Path: "\"github.com/jmoiron/sqlx\"",
-	})
-	databaseAbstractCode.AddImport(ast.ImportSpec{
-		Path: "\"github.com/rs/zerolog/log\"",
-	})
-
-	err = databaseAbstractCode.RebuildCode()
-	if err != nil {
-		return err
-	}
-	// get the manipulate code
-	databaseCode := databaseAbstractCode.GetCode()
-
-	return s.fs.CreateFileIfNotExists(
-		option.DatabasePath,
-		fmt.Sprintf("%s.go", option.DatabaseType.ToString()),
-		databaseCode,
-	)
+	return err
 }
