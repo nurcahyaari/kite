@@ -1,4 +1,4 @@
 APPLICATION:
   NAME: Kite
-  DESCRIPTION: Kite is a golang code structure generator. It ease to use and helfully to boost your productivity. no need to recreating your code structure when creating a new services, or apps
+  DESCRIPTION: Kite is a golang code structure generator. It is easy to use and helps to boost your productivity. no need to recreate your code structure when creating new services, or apps
   VERSION: 0.5.0
