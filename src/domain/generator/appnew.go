@@ -62,6 +62,12 @@ func NewApp(
 }
 
 func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
+	// creational flow
+	// create top level file such as (.env, .env.example, main.go, wire.go, gitignore, gitinit, go.mod)
+	// create config modules
+	// create internal modules such as (protocols, logger, utils)
+	// create infrastructure modules
+	// create src moduels
 	if !s.fs.IsFolderEmpty(dto.ProjectPath) && s.fs.IsFolderExists(dto.ProjectPath) {
 		return errors.New("the folder is not empty")
 	}
@@ -87,11 +93,13 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 	// create file in project path dir level
 	err = s.envGen.CreateEnvFile(dto.ProjectPath)
 	if err != nil {
+		fmt.Println("Err1")
 		return err
 	}
 
 	err = s.envGen.CreateEnvExampleFile(dto.ProjectPath)
 	if err != nil {
+		fmt.Println("Err1")
 		return err
 	}
 
@@ -100,6 +108,7 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 		GomodName:   dto.GoModName,
 	})
 	if err != nil {
+		fmt.Println("Err1")
 		return err
 	}
 
@@ -125,8 +134,9 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 
 	// create internal module
 	internalDto := internalgen.InternalDto{
-		Path:      internalPath,
-		GomodName: dto.GoModName,
+		Path:        internalPath,
+		ProjectPath: dto.ProjectPath,
+		GomodName:   dto.GoModName,
 	}
 	err = s.internalGen.CreateInternalDir(internalDto)
 	if err != nil {
@@ -143,6 +153,7 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 		GomodName:          dto.GoModName,
 		DatabaseType:       dbgen.DbMysql,
 		InfrastructurePath: infrastructurePath,
+		ProjectPath:        dto.ProjectPath,
 	}
 	err = s.infrastructureGen.CreateInfrastructureDir(infrastructureDto)
 	if err != nil {

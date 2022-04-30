@@ -2,12 +2,14 @@ package ast
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 
 	"github.com/nurcahyaari/kite/internal/logger"
+	"gopkg.in/guregu/null.v4"
 )
 
 type AbstractCodeImpl struct {
@@ -28,7 +30,7 @@ type AbstractCode interface {
 	AddFunction(functionSpecs FunctionSpecList)
 	AddFunctionArgs(functionSpec FunctionSpec)
 	AddFunctionCaller(funcName string, callerSpec CallerSpec)
-	AddArgsToCallExpr(callerSpec CallerSpec)
+	AddArgsToCallExpr(funcName null.String, callerSpec CallerSpec)
 	AddFunctionArgsToReturn(functionReturnArgs FunctionReturnArgsSpec)
 	AddCommentOutsideFunction(commentSpec Comment)
 	RebuildCode() error
@@ -39,7 +41,7 @@ func NewAbstractCode(code string, parserMode parser.Mode) AbstractCode {
 	// parse source code from the string
 	file, err := parser.ParseFile(fset, "", code, parserMode)
 	if err != nil {
-		logger.Errorln("Error when parse code")
+		logger.Errorln(fmt.Sprintf("Error when parse code: %v", err))
 		return nil
 	}
 	return &AbstractCodeImpl{
@@ -326,8 +328,8 @@ func (a *AbstractCodeImpl) AddStructVarDecl(structArgs StructArgList) {
 
 func (a *AbstractCodeImpl) AddFunction(functionSpecs FunctionSpecList) {
 	for _, functionSpec := range functionSpecs {
-		decls := []ast.Decl{}
-		structIndex := 0
+		var decls []ast.Decl
+		var structIndex int
 		for i, decl := range a.file.Decls {
 			gendecl, ok := decl.(*ast.GenDecl)
 			if ok {
@@ -528,8 +530,12 @@ func (a *AbstractCodeImpl) AddFunction(functionSpecs FunctionSpecList) {
 		if len(a.file.Decls) == 0 {
 			decls = append(a.file.Decls, newFunc)
 		} else {
-			decls = append(a.file.Decls[:structIndex+1], a.file.Decls[structIndex:]...)
-			decls[structIndex] = newFunc
+			if len(a.file.Decls) > 1 {
+				decls = append(a.file.Decls[:structIndex+1], a.file.Decls[structIndex:]...)
+				decls[structIndex] = newFunc
+			} else {
+				decls = append(a.file.Decls, newFunc)
+			}
 		}
 		a.file.Decls = decls
 	}
@@ -609,8 +615,11 @@ func (a *AbstractCodeImpl) AddFunctionArgs(functionSpec FunctionSpec) {
 // }
 // TODO: should make the function more globaly
 func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDependencyInjection) {
-	a.file.Decls = append(a.file.Decls[:1], a.file.Decls...)
-
+	declIdx := 1
+	if len(a.file.Decls) == 0 {
+		declIdx = 0
+	}
+	a.file.Decls = append(a.file.Decls[:declIdx], a.file.Decls...)
 	idx := 0
 	if len(a.file.Decls) > 1 {
 		stmt, ok := a.file.Decls[0].(*ast.GenDecl)
@@ -621,9 +630,11 @@ func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDepende
 		}
 	}
 
+	var wireGenDecl *ast.GenDecl
 	if wireDependency.InterfaceLib == "" && wireDependency.InterfaceName == "" &&
 		wireDependency.StructLib == "" && wireDependency.StructName == "" {
-		a.file.Decls[idx] = &ast.GenDecl{
+		// a.file.Decls[idx] =
+		wireGenDecl = &ast.GenDecl{
 			Tok: token.VAR,
 			Specs: []ast.Spec{
 				&ast.ValueSpec{
@@ -654,7 +665,7 @@ func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDepende
 			},
 		}
 	} else {
-		a.file.Decls[idx] = &ast.GenDecl{
+		wireGenDecl = &ast.GenDecl{
 			Tok: token.VAR,
 			Specs: []ast.Spec{
 				&ast.ValueSpec{
@@ -711,6 +722,22 @@ func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDepende
 					},
 				},
 			},
+		}
+	}
+
+	if len(a.file.Decls) > 0 {
+		if wireDependency.InterfaceLib == "" && wireDependency.InterfaceName == "" &&
+			wireDependency.StructLib == "" && wireDependency.StructName == "" {
+			a.file.Decls[idx] = wireGenDecl
+		} else {
+			a.file.Decls[idx] = wireGenDecl
+		}
+	} else {
+		if wireDependency.InterfaceLib == "" && wireDependency.InterfaceName == "" &&
+			wireDependency.StructLib == "" && wireDependency.StructName == "" {
+			a.file.Decls = append(a.file.Decls, wireGenDecl)
+		} else {
+			a.file.Decls = append(a.file.Decls, wireGenDecl)
 		}
 	}
 }
@@ -776,9 +803,27 @@ func (a *AbstractCodeImpl) AddFuncWireBuild(funcName string) {
 	}
 }
 
-func (a *AbstractCodeImpl) AddArgsToCallExpr(callerSpec CallerSpec) {
+func (a *AbstractCodeImpl) AddArgsToCallExpr(funcName null.String, callerSpec CallerSpec) {
 	ast.Inspect(a.file, func(n ast.Node) bool {
 		callExpr, ok := n.(*ast.CallExpr)
+
+		if funcName.Valid {
+			funcDecl, ok := n.(*ast.FuncDecl)
+			if ok {
+				if funcDecl.Name.Name == funcName.String {
+					for _, l := range funcDecl.Body.List {
+						funcBodyExprStmt, ok := l.(*ast.ExprStmt)
+						if ok {
+							functionBodyCallStmt, ok := funcBodyExprStmt.X.(*ast.CallExpr)
+							if ok {
+								callExpr = functionBodyCallStmt
+							}
+						}
+					}
+				}
+			}
+		}
+
 		if ok {
 			selectorStmt, ok := callExpr.Fun.(*ast.SelectorExpr)
 			if ok {

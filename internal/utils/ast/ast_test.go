@@ -7,6 +7,7 @@ import (
 	"github.com/nurcahyaari/kite/internal/utils/ast"
 	libast "github.com/nurcahyaari/kite/internal/utils/ast"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/guregu/null.v4"
 )
 
 func TestAddImport(t *testing.T) {
@@ -1678,6 +1679,43 @@ func main() {
 		assert.NoError(t, err)
 		assert.Equal(t, exp, act)
 	})
+
+	t.Run("Test add function 12", func(t *testing.T) {
+		code := `
+		package test
+		import (
+			a "path/of/package/a"
+			"path/of/package/b"
+			usermodel "path/model/user"
+		)
+		`
+
+		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
+		abstractCode.AddFunction(libast.FunctionSpecList{
+			&libast.FunctionSpec{
+				Name: "Test",
+			},
+		})
+		err := abstractCode.RebuildCode()
+		act := abstractCode.GetCode()
+		// don't touch the expected code please
+		// expect you change the test case please :D
+		// building this string obviously difficult
+		exp := `package test
+
+import (
+	a "path/of/package/a"
+	"path/of/package/b"
+	usermodel "path/model/user"
+)
+
+func Test() {
+}
+`
+
+		assert.NoError(t, err)
+		assert.Equal(t, exp, act)
+	})
 }
 
 func TestAddFunctionArgs(t *testing.T) {
@@ -2131,39 +2169,41 @@ func TestAddArgsToCallExpr(t *testing.T) {
 		act = abstractCode.GetCode()
 
 		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
-		abstractCode.AddArgsToCallExpr(libast.CallerSpec{
-			Func: libast.CallerFunc{
-				Name: libast.CallerSelecterExpr{
-					Name: "wire",
-				},
-				Selector: "Build",
-			},
-			Args: libast.CallerArgList{
-				&libast.CallerArg{
-					SelectorStmt: &libast.CallerArgSelectorStmt{
-						LibName:  "db",
-						DataType: "NewMysqlClient",
+		abstractCode.AddArgsToCallExpr(
+			null.String{},
+			libast.CallerSpec{
+				Func: libast.CallerFunc{
+					Name: libast.CallerSelecterExpr{
+						Name: "wire",
 					},
+					Selector: "Build",
 				},
+				Args: libast.CallerArgList{
+					&libast.CallerArg{
+						SelectorStmt: &libast.CallerArgSelectorStmt{
+							LibName:  "db",
+							DataType: "NewMysqlClient",
+						},
+					},
 
-				&libast.CallerArg{
-					Ident: &libast.CallerArgIdent{
-						Name: "userSvc",
+					&libast.CallerArg{
+						Ident: &libast.CallerArgIdent{
+							Name: "userSvc",
+						},
+					},
+					&libast.CallerArg{
+						Ident: &libast.CallerArgIdent{
+							Name: "userRepo",
+						},
+					},
+					&libast.CallerArg{
+						SelectorStmt: &libast.CallerArgSelectorStmt{
+							LibName:  "http",
+							DataType: "NewHttpProtocol",
+						},
 					},
 				},
-				&libast.CallerArg{
-					Ident: &libast.CallerArgIdent{
-						Name: "userRepo",
-					},
-				},
-				&libast.CallerArg{
-					SelectorStmt: &libast.CallerArgSelectorStmt{
-						LibName:  "http",
-						DataType: "NewHttpProtocol",
-					},
-				},
-			},
-		})
+			})
 		err = abstractCode.RebuildCode()
 		assert.NoError(t, err)
 		act = abstractCode.GetCode()
@@ -2302,6 +2342,7 @@ func InitHttpProtocol() *http.HttpImpl {
 
 		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
 		abstractCode.AddArgsToCallExpr(
+			null.String{},
 			libast.CallerSpec{
 				Func: libast.CallerFunc{
 					Name: libast.CallerSelecterExpr{
@@ -2325,7 +2366,9 @@ func InitHttpProtocol() *http.HttpImpl {
 		// don't touch the expected code please
 		// expect you change the test case please :D
 		// building this string obviously difficult
-		exp := `//+build wireinject
+		exp := `//go:build wireinject
+// +build wireinject
+
 package test
 
 var productSvc = wire.NewSet(productsvc.NewProductService, wire.Bind(new(productsvc.ProductService), new(*productsvc.ProductServiceImpl)))
@@ -2387,6 +2430,7 @@ func InitHttpProtocol() *http.HttpImpl {
 
 		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
 		abstractCode.AddArgsToCallExpr(
+			null.String{},
 			libast.CallerSpec{
 				Func: libast.CallerFunc{
 					Name: libast.CallerSelecterExpr{
@@ -2471,6 +2515,7 @@ func InitHttpProtocol() *http.HttpImpl {
 
 		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
 		abstractCode.AddArgsToCallExpr(
+			null.String{},
 			libast.CallerSpec{
 				Func: libast.CallerFunc{
 					Name: libast.CallerSelecterExpr{
@@ -2504,6 +2549,7 @@ func InitHttpProtocol() *http.HttpImpl {
 
 		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
 		abstractCode.AddArgsToCallExpr(
+			null.String{},
 			libast.CallerSpec{
 				Func: libast.CallerFunc{
 					Name: libast.CallerSelecterExpr{
@@ -2564,8 +2610,7 @@ func InitHttpProtocol() *http.HttpImpl {
 	wire.Build(storages, httpHandler, httpRouter, http.NewHttp)
 	return &http.HttpImpl{}
 }
-
-		`
+`
 
 		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
 		abstractCode.AddWireDependencyInjection(
@@ -2580,6 +2625,7 @@ func InitHttpProtocol() *http.HttpImpl {
 			},
 		)
 		abstractCode.AddArgsToCallExpr(
+			null.String{},
 			ast.CallerSpec{
 				Func: ast.CallerFunc{
 					Name: ast.CallerSelecterExpr{
@@ -2603,7 +2649,9 @@ func InitHttpProtocol() *http.HttpImpl {
 		// don't touch the expected code please
 		// expect you change the test case please :D
 		// building this string obviously difficult
-		exp := `//+build wireinject
+		exp := `//go:build wireinject
+// +build wireinject
+
 package main
 
 import (
@@ -2627,11 +2675,67 @@ func InitHttpProtocol() *http.HttpImpl {
 	wire.Build(storages, httpHandler, httpRouter, http.NewHttp, productSvc)
 	return &http.HttpImpl{}
 }
-		
 `
 
 		assert.Equal(t, exp, act)
 	})
+
+	// 	t.Run("Test add wire dependency injection 6", func(t *testing.T) {
+	// 		code := `//go:build wireinject
+	// 		// +build wireinject
+
+	// package main
+
+	// import (
+	// 	"github.com/google/wire"
+	// 	 "test1/internal/protocols/http"
+	// )
+
+	// func InitHttpProtocol() *http.HttpImpl {
+	// 	return &http.HttpImpl{}
+	// }`
+
+	// 		abstractCode := libast.NewAbstractCode(code, parser.ParseComments)
+	// 		abstractCode.AddFunctionCaller("InitHttpProtocol", libast.CallerSpec{
+	// 			Func: libast.CallerFunc{
+	// 				Name: libast.CallerSelecterExpr{
+	// 					Name: "wire",
+	// 				},
+	// 				Selector: "Build",
+	// 			},
+	// 		})
+	// 		err := abstractCode.RebuildCode()
+	// 		assert.NoError(t, err)
+	// 		act := abstractCode.GetCode()
+
+	// 		abstractCode = libast.NewAbstractCode(act, parser.ParseComments)
+	// 		abstractCode.AddWireDependencyInjection(libast.WireDependencyInjection{
+	// 			VarName:                   "productSvc",
+	// 			TargetInjectName:          "productsvc",
+	// 			TargetInjectConstructName: "NewProductService",
+	// 			InterfaceLib:              "productsvc",
+	// 			InterfaceName:             "ProductService",
+	// 			StructLib:                 "productsvc",
+	// 			StructName:                "ProductServiceImpl",
+	// 		})
+	// 		err = abstractCode.RebuildCode()
+	// 		assert.NoError(t, err)
+	// 		act = abstractCode.GetCode()
+
+	// 		// don't touch the expected code please
+	// 		// expect you change the test case please :D
+	// 		// building this string obviously difficult
+	// 		exp := `package test
+
+	// var productSvc = wire.NewSet(productsvc.NewProductService, wire.Bind(new(productsvc.ProductService), new(*productsvc.ProductServiceImpl)))
+
+	// func InitHttpProtocol() *http.HttpImpl {
+	// 	wire.Build()
+	// 	return &http.HttpImpl{}
+	// }
+	// `
+	// 		assert.Equal(t, exp, act)
+	// 	})
 
 }
 
@@ -2808,7 +2912,9 @@ func main() {
 		// don't touch the expected code please
 		// expect you change the test case please :D
 		// building this string obviously difficult
-		exp := `//+build wireinject
+		exp := `//go:build wireinject
+// +build wireinject
+
 package test
 
 import (

@@ -22,14 +22,14 @@ func ConcatDirPath(dir ...string) string {
 	for i, d := range dir {
 		path := d
 		if i+1 < len(dir) {
-			path = RemoveLastSlashOnPath(d)
+			path = AddSlashOnPath(path)
 		}
 		newPath = fmt.Sprintf("%s%s", newPath, path)
 	}
 	return newPath
 }
 
-func RemoveLastSlashOnPath(path string) string {
+func AddSlashOnPath(path string) string {
 	pathSplit := strings.Split(path, "")
 	if len(pathSplit) > 0 {
 		if pathSplit[len(pathSplit)-1] != "/" {
@@ -39,6 +39,17 @@ func RemoveLastSlashOnPath(path string) string {
 		return strings.Join(pathSplit, "")
 	}
 	return path
+}
+
+func RemoveSlashFirstAndLast(path string) string {
+	pathSplit := strings.Split(path, "")
+	if pathSplit[0] == "/" {
+		pathSplit[0] = ""
+	}
+	if pathSplit[len(pathSplit)-1] == "/" {
+		pathSplit[len(pathSplit)-1] = ""
+	}
+	return strings.Join(pathSplit, "")
 }
 
 func ReadFile(filePath string) (string, error) {
@@ -123,4 +134,9 @@ func GoModInit(projectPath, goModName string) error {
 		return err
 	}
 	return nil
+}
+
+func GetImportPathBasedOnProjectPath(projectPath, gomodName string) string {
+	s := strings.Split(projectPath, gomodName)
+	return ConcatDirPath(gomodName, RemoveSlashFirstAndLast(s[1]))
 }

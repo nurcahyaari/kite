@@ -10,6 +10,7 @@ import (
 	"github.com/nurcahyaari/kite/internal/utils"
 	"github.com/nurcahyaari/kite/internal/utils/ast"
 	"github.com/nurcahyaari/kite/src/domain/emptygen"
+	"github.com/nurcahyaari/kite/src/domain/wiregen"
 )
 
 type ProtocolHttpGen interface {
@@ -30,15 +31,18 @@ type ProtocolHttpGen interface {
 type ProtocolHttpGenImpl struct {
 	fs       database.FileSystem
 	emptyGen emptygen.EmptyGen
+	wireGen  wiregen.WireGen
 }
 
 func NewProtocolHttp(
 	fs database.FileSystem,
 	emptyGen emptygen.EmptyGen,
+	wireGen wiregen.WireGen,
 ) *ProtocolHttpGenImpl {
 	return &ProtocolHttpGenImpl{
 		fs:       fs,
 		emptyGen: emptyGen,
+		wireGen:  wireGen,
 	}
 }
 
@@ -299,6 +303,25 @@ func (s *ProtocolHttpGenImpl) createInternalHttpRouteFile(dto ProtocolDto) error
 		return nil
 	}
 
+	err = s.wireGen.AddDependencyAfterCreatingModule(wiregen.WireAddModuleDto{
+		WireDto: wiregen.WireDto{
+			ProjectPath: dto.ProjectPath,
+			GomodName:   dto.GomodName,
+		},
+		Dependency: ast.WireDependencyInjection{
+			VarName:                   "httpRouter",
+			TargetInjectName:          "httprouter",
+			TargetInjectConstructName: "NewHttpRouter",
+		},
+		Import: ast.ImportSpec{
+			Name: "httprouter",
+			Path: fmt.Sprintf("\"%s\"", utils.GetImportPathBasedOnProjectPath(dto.Path, dto.GomodName)),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -384,12 +407,38 @@ func (s *ProtocolHttpGenImpl) createProtocolInternalHttpFile(dto ProtocolDto) er
 		return nil
 	}
 
+	err = s.wireGen.CreateWireEntryPoint(wiregen.WireEntryPointDto{
+		WireDto: wiregen.WireDto{
+			FunctionName: "InitHttpProtocol",
+		},
+		Import: ast.ImportSpec{
+			Path: fmt.Sprintf("\"%s\"", utils.GetImportPathBasedOnProjectPath(dto.Path, dto.GomodName)),
+		},
+		Return: &ast.FunctionReturnSpecList{
+			&ast.FunctionReturnSpec{
+				IsPointer: true,
+				IsStruct:  true,
+				LibName:   "http",
+				DataType:  "HttpImpl",
+				Return:    "HttpImpl",
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // create internal/http directory and all of the assets
 func (s *ProtocolHttpGenImpl) CreateProtocolInternalHttp(dto ProtocolDto) error {
 	var err error
+
+	err = s.createProtocolInternalHttpFile(dto)
+	if err != nil {
+		return err
+	}
 
 	err = s.createInternalHttpErrorDir(dto)
 	if err != nil {
@@ -407,11 +456,6 @@ func (s *ProtocolHttpGenImpl) CreateProtocolInternalHttp(dto ProtocolDto) error 
 	}
 
 	err = s.createInternalHttpRouteDir(dto)
-	if err != nil {
-		return err
-	}
-
-	err = s.createProtocolInternalHttpFile(dto)
 	if err != nil {
 		return err
 	}
@@ -476,6 +520,26 @@ func (s *ProtocolHttpGenImpl) CreateProtocolSrcHttpBaseFile(dto ProtocolDto) err
 	if !s.fs.IsFileExists(utils.ConcatDirPath(dto.Path, baseHandlerFile)) {
 		s.fs.CreateFileIfNotExists(dto.Path, baseHandlerFile, templateBaseFileString)
 	}
+
+	err = s.wireGen.AddDependencyAfterCreatingModule(wiregen.WireAddModuleDto{
+		WireDto: wiregen.WireDto{
+			ProjectPath: dto.ProjectPath,
+			GomodName:   dto.GomodName,
+		},
+		Dependency: ast.WireDependencyInjection{
+			VarName:                   "httpHandler",
+			TargetInjectName:          "httphandler",
+			TargetInjectConstructName: "NewHttpHandler",
+		},
+		Import: ast.ImportSpec{
+			Name: "httprouter",
+			Path: fmt.Sprintf("\"%s\"", utils.GetImportPathBasedOnProjectPath(dto.Path, dto.GomodName)),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

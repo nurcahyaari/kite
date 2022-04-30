@@ -54,16 +54,16 @@ func (s *ProtocolGenImpl) CreateProtocolInternalType(dto ProtocolDto) error {
 	}
 
 	protocolDto := protocoltype.ProtocolDto{
-		Name:      dto.Name,
-		GomodName: dto.GomodName,
-		Path:      dirPath,
+		Name:        dto.Name,
+		GomodName:   dto.GomodName,
+		Path:        dirPath,
+		ProjectPath: dto.ProjectPath,
 	}
 
 	switch dto.ProtocolType {
 	case Http:
 		err = s.protocolType.CreateProtocolInternalHttp(protocolDto)
 	}
-
 	if err != nil {
 		return err
 	}
@@ -83,9 +83,10 @@ func (s *ProtocolGenImpl) CreateProtocolSrcBaseFile(dto ProtocolDto) error {
 		}
 
 		protocolDto := protocoltype.ProtocolDto{
-			Name:      dto.Name,
-			GomodName: dto.GomodName,
-			Path:      path,
+			Name:        dto.Name,
+			GomodName:   dto.GomodName,
+			Path:        path,
+			ProjectPath: dto.ProjectPath,
 		}
 
 		switch dto.ProtocolType {
@@ -112,9 +113,10 @@ func (s *ProtocolGenImpl) CreateProtocolSrcHandler(dto ProtocolDto) error {
 		}
 
 		protocolDto := protocoltype.ProtocolDto{
-			Name:      dto.Name,
-			GomodName: dto.GomodName,
-			Path:      path,
+			Name:        dto.Name,
+			GomodName:   dto.GomodName,
+			Path:        path,
+			ProjectPath: dto.ProjectPath,
 		}
 
 		switch dto.ProtocolType {

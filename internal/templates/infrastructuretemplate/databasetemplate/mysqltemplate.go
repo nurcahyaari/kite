@@ -1,6 +1,10 @@
 package databasetemplate
 
-import "github.com/nurcahyaari/kite/internal/templates"
+import (
+	_ "embed"
+
+	"github.com/nurcahyaari/kite/internal/templates"
+)
 
 //go:embed mysql.tmpl
 var mysqlTemplateLoc string

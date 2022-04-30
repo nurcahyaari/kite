@@ -49,6 +49,7 @@ func (s *InfrastructureGenImpl) GenerateInfrastructure(dto InfrastructureDto) er
 		GomodName:    dto.GomodName,
 		DatabasePath: databasePath,
 		DatabaseType: dto.DatabaseType,
+		ProjectPath:  dto.ProjectPath,
 	}
 	err := s.dbGen.CreateDatabaseDir(dbDto)
 	if err != nil {

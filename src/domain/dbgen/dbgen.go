@@ -39,9 +39,14 @@ func (s DatabaseGenImpl) CreateDatabaseDir(dto DatabaseDto) error {
 
 func (s DatabaseGenImpl) CreateDatabaseConnection(dto DatabaseDto) error {
 	var err error
+	databaseTypeDto := databasetype.DatabaseTypeDto{
+		Path:        dto.DatabasePath,
+		GomodName:   dto.GomodName,
+		ProjectPath: dto.ProjectPath,
+	}
 	switch dto.DatabaseType {
 	case DbMysql:
-		err = s.mysqlGen.CreateMysqlConnection()
+		err = s.mysqlGen.CreateMysqlConnection(databaseTypeDto)
 	}
 	return err
 }

@@ -21,6 +21,7 @@ func (s DbType) ToString() string {
 
 type DatabaseDto struct {
 	DatabasePath string
+	ProjectPath  string
 	GomodName    string
 	DatabaseType DbType
 }

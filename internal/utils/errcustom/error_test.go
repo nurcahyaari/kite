@@ -35,6 +35,6 @@ func TestErrorCreation(t *testing.T) {
 		err := errcstm.ToErrorAsString()
 
 		assert.Error(t, err)
-		assert.Equal(t, "error1,error2,error3", err.Error())
+		assert.Equal(t, "err: error1,error2,error3", err.Error())
 	})
 }

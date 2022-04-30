@@ -27,3 +27,10 @@ func TestConcatDirPath(t *testing.T) {
 		assert.Equal(t, "test/test", r)
 	})
 }
+
+func TestGetImportPathBasedOnProjectPath(t *testing.T) {
+	t.Run("test1", func(t *testing.T) {
+		r := utils.GetImportPathBasedOnProjectPath("/Users/nurcahyaari/Documents/projects/tools/testkite/test1/internal/protocols/http/router", "test1")
+		assert.Equal(t, "test1/internal/protocols/http/router", r)
+	})
+}

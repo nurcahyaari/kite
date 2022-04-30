@@ -1,6 +1,7 @@
 package databasetype
 
 type DatabaseTypeDto struct {
-	Path      string
-	GomodName string
+	Path        string
+	ProjectPath string
+	GomodName   string
 }
