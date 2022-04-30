@@ -2,7 +2,6 @@ package infrastructuregen
 
 import (
 	"github.com/nurcahyaari/kite/infrastructure/database"
-	"github.com/nurcahyaari/kite/internal/logger"
 	"github.com/nurcahyaari/kite/internal/utils"
 	"github.com/nurcahyaari/kite/src/domain/cachegen"
 	"github.com/nurcahyaari/kite/src/domain/dbgen"
@@ -32,12 +31,10 @@ func NewInfrastructureGen(
 }
 
 func (s *InfrastructureGenImpl) CreateInfrastructureDir(dto InfrastructureDto) error {
-	logger.Info("Creating infrastructure directory... ")
 	err := s.fs.CreateFolderIfNotExists(dto.InfrastructurePath)
 	if err != nil {
 		return err
 	}
-	logger.InfoSuccessln("success")
 
 	return nil
 }

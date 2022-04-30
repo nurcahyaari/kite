@@ -6,7 +6,6 @@ import (
 	"go/parser"
 
 	"github.com/nurcahyaari/kite/infrastructure/database"
-	"github.com/nurcahyaari/kite/internal/logger"
 	"github.com/nurcahyaari/kite/internal/templates/misctemplate"
 	"github.com/nurcahyaari/kite/internal/utils"
 	"github.com/nurcahyaari/kite/internal/utils/ast"
@@ -17,6 +16,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/envgen"
 	"github.com/nurcahyaari/kite/src/domain/infrastructuregen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen"
+	"github.com/nurcahyaari/kite/src/domain/miscgen"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen"
 	"github.com/nurcahyaari/kite/src/domain/srcgen"
 	"github.com/nurcahyaari/kite/src/domain/wiregen"
@@ -37,6 +37,8 @@ type AppGenNewImpl struct {
 	infrastructureGen infrastructuregen.InfrastructureGen
 	srcGen            srcgen.SrcGen
 	domainGen         domaingen.DomainGen
+	gitignoreGen      miscgen.GitIgnoreGen
+	makefileGen       miscgen.MakefileGen
 }
 
 func NewApp(
@@ -48,6 +50,8 @@ func NewApp(
 	infrastructureGen infrastructuregen.InfrastructureGen,
 	srcGen srcgen.SrcGen,
 	domainGen domaingen.DomainGen,
+	gitignoreGen miscgen.GitIgnoreGen,
+	makefileGen miscgen.MakefileGen,
 ) *AppGenNewImpl {
 	return &AppGenNewImpl{
 		fs:                fs,
@@ -58,6 +62,8 @@ func NewApp(
 		infrastructureGen: infrastructureGen,
 		srcGen:            srcGen,
 		domainGen:         domainGen,
+		gitignoreGen:      gitignoreGen,
+		makefileGen:       makefileGen,
 	}
 }
 
@@ -84,6 +90,11 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 		return err
 	}
 
+	err = utils.Gitinit(dto.ProjectPath)
+	if err != nil {
+		return err
+	}
+
 	// setup all path
 	configPath := utils.ConcatDirPath(dto.ProjectPath, "config")
 	internalPath := utils.ConcatDirPath(dto.ProjectPath, "internal")
@@ -105,6 +116,20 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 		ProjectPath: dto.ProjectPath,
 		GomodName:   dto.GoModName,
 	})
+	if err != nil {
+		return err
+	}
+
+	miscDto := miscgen.MiscDto{
+		ProjectPath: dto.ProjectPath,
+		GomodName:   dto.GoModName,
+	}
+	err = s.gitignoreGen.CreateGitignoreFile(miscDto)
+	if err != nil {
+		return err
+	}
+
+	err = s.makefileGen.CreateMakefilefile(miscDto)
 	if err != nil {
 		return err
 	}
@@ -182,8 +207,6 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 }
 
 func (s AppGenNewImpl) createMainApp(dto AppNewDto) error {
-	logger.Info("Create main.go file... ")
-
 	templateNew := misctemplate.NewMainTemplate()
 	mainTemplate, err := templateNew.Render()
 	if err != nil {
@@ -216,7 +239,6 @@ func (s AppGenNewImpl) createMainApp(dto AppNewDto) error {
 		return err
 	}
 
-	logger.InfoSuccessln("success")
 	return nil
 }
 

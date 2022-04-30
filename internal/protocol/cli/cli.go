@@ -3,10 +3,12 @@ package cli
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/nurcahyaari/kite/config"
 	"github.com/nurcahyaari/kite/internal/logger"
 	clirouter "github.com/nurcahyaari/kite/src/protocol/cli"
+	"github.com/theckman/yacspin"
 
 	cli "github.com/urfave/cli/v2"
 )
@@ -37,6 +39,19 @@ func (s CliImpl) CreateNewCliApp() {
 		logger.Errorln(err)
 	}
 
+	spinner, err := yacspin.New(yacspin.Config{
+		Frequency:         100 * time.Millisecond,
+		CharSet:           yacspin.CharSets[57],
+		SuffixAutoColon:   true,
+		StopCharacter:     "✔",
+		StopFailCharacter: "✘",
+		StopColors:        []string{"fgGreen"},
+		StopFailColors:    []string{"fgRed"},
+	})
+	if err != nil {
+		return
+	}
+
 	s.cli.Commands = []*cli.Command{
 		{
 			Name:        "new",
@@ -54,6 +69,9 @@ func (s CliImpl) CreateNewCliApp() {
 				},
 			},
 			Action: func(ctx *cli.Context) error {
+				spinner.Message(" Creating Application ")
+				spinner.StopMessage(" New Application was created ")
+				spinner.Start()
 				return s.clirouter.CreateNewApps(ctx, path)
 			},
 		},
@@ -78,6 +96,9 @@ func (s CliImpl) CreateNewCliApp() {
 				},
 			},
 			Action: func(ctx *cli.Context) error {
+				spinner.Message(" Creating Domain ")
+				spinner.StopMessage(" New Domain was created ")
+				spinner.Start()
 				return s.clirouter.CreateNewDomain(ctx, path)
 			},
 		},
@@ -102,6 +123,9 @@ func (s CliImpl) CreateNewCliApp() {
 				},
 			},
 			Action: func(ctx *cli.Context) error {
+				spinner.Message(" Creating Handler ")
+				spinner.StopMessage(" New Handler was created ")
+				spinner.Start()
 				return s.clirouter.CreateNewHandler(ctx, path)
 			},
 		},
@@ -109,6 +133,9 @@ func (s CliImpl) CreateNewCliApp() {
 
 	err = s.cli.Run(os.Args)
 	if err != nil {
-		fmt.Println(err)
+		spinner.StopFailMessage(fmt.Sprintf(" %s ", err.Error()))
+		spinner.StopFail()
 	}
+
+	spinner.Stop()
 }

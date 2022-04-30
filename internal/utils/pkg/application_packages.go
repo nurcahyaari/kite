@@ -1,10 +1,7 @@
 package pkg
 
 import (
-	"fmt"
 	"os/exec"
-
-	"github.com/nurcahyaari/kite/internal/logger"
 )
 
 type AppPackages struct {
@@ -30,14 +27,11 @@ func (s AppPackages) CheckPackageAvailable(pkg string) bool {
 }
 
 func (s AppPackages) InstallPackage() error {
-	logger.Infoln("installing packages")
 	for _, p := range s.Packages {
-		logger.Info(fmt.Sprintf("installing %s...", p))
 		cmd := exec.Command("go", "get", p)
 		if err := cmd.Run(); err != nil {
 			return err
 		}
-		logger.InfoSuccessln("success")
 	}
 	return nil
 }

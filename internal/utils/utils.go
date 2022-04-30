@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/nurcahyaari/kite/internal/logger"
 	"golang.org/x/mod/modfile"
 )
 
@@ -73,7 +72,6 @@ func ReadFile(filePath string) (string, error) {
 }
 
 func GoGenerateRun(projectPath string) error {
-	logger.Infoln("Running go generate")
 	os.Chdir(projectPath)
 	cmd := exec.Command("go", "generate", ".")
 	if err := cmd.Run(); err != nil {
@@ -104,7 +102,6 @@ func GetAppNameBasedOnGoMod(goModName string) string {
 }
 
 func GoFormat(path, goModName string) error {
-	logger.Infoln("Running go fmt")
 	cmd := exec.Command("go", "fmt", fmt.Sprintf("%s/...", goModName))
 	cmd.Dir = path
 	var out bytes.Buffer
@@ -117,7 +114,6 @@ func GoFormat(path, goModName string) error {
 }
 
 func Gitinit(projectPath string) error {
-	logger.Infoln("Running gitinit")
 	os.Chdir(projectPath)
 	cmd := exec.Command("git", "init")
 	if err := cmd.Run(); err != nil {
@@ -127,7 +123,6 @@ func Gitinit(projectPath string) error {
 }
 
 func GoModInit(projectPath, goModName string) error {
-	logger.Infoln("Running go mod init")
 	os.Chdir(projectPath)
 	cmd := exec.Command("go", "mod", "init", goModName)
 	if err := cmd.Run(); err != nil {

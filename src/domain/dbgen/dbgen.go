@@ -2,7 +2,6 @@ package dbgen
 
 import (
 	"github.com/nurcahyaari/kite/infrastructure/database"
-	"github.com/nurcahyaari/kite/internal/logger"
 	"github.com/nurcahyaari/kite/src/domain/dbgen/databasetype"
 )
 
@@ -27,12 +26,10 @@ func NewDatabaseGen(
 }
 
 func (s DatabaseGenImpl) CreateDatabaseDir(dto DatabaseDto) error {
-	logger.Info("Creating infrastructure/database directory... ")
 	err := s.fs.CreateFolderIfNotExists(dto.DatabasePath)
 	if err != nil {
 		return err
 	}
-	logger.InfoSuccessln("success")
 
 	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"go/parser"
 
 	"github.com/nurcahyaari/kite/infrastructure/database"
-	"github.com/nurcahyaari/kite/internal/logger"
 	"github.com/nurcahyaari/kite/internal/templates/internaltemplate/loggertemplate"
 	"github.com/nurcahyaari/kite/internal/utils/ast"
 )
@@ -27,18 +26,14 @@ func NewLoggerGen(
 }
 
 func (s LoggerGenImpl) CreateLoggerDir(dto LoggerDto) error {
-	logger.Info("Creating internal/logger directory... ")
 	err := s.fs.CreateFolderIfNotExists(dto.Path)
 	if err != nil {
 		return err
 	}
-	logger.InfoSuccessln("success")
 	return nil
 }
 
 func (s LoggerGenImpl) CreateDefaultLoggerFile(dto LoggerDto) error {
-	logger.Info("Creating internal/logger/log.go file... ")
-
 	templateNew := loggertemplate.NewLoggerTemplate()
 	loggerTemplate, err := templateNew.Render()
 	if err != nil {
@@ -70,6 +65,6 @@ func (s LoggerGenImpl) CreateDefaultLoggerFile(dto LoggerDto) error {
 	if err != nil {
 		return err
 	}
-	logger.InfoSuccessln("success")
+
 	return nil
 }

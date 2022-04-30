@@ -8,6 +8,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/handlergen"
 	"github.com/nurcahyaari/kite/src/domain/infrastructuregen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen"
+	"github.com/nurcahyaari/kite/src/domain/miscgen"
 	"github.com/nurcahyaari/kite/src/domain/srcgen"
 	"github.com/nurcahyaari/kite/src/domain/wiregen"
 )
@@ -34,6 +35,8 @@ func NewAppGenerator(
 	srcGen srcgen.SrcGen,
 	domainGen domaingen.DomainGen,
 	handlerGen handlergen.HandlerGen,
+	gitignoreGen miscgen.GitIgnoreGen,
+	makefileGen miscgen.MakefileGen,
 ) *AppGeneratorImpl {
 	return &AppGeneratorImpl{
 		AppGenNewImpl: NewApp(
@@ -45,6 +48,8 @@ func NewAppGenerator(
 			infrastructureGen,
 			srcGen,
 			domainGen,
+			gitignoreGen,
+			makefileGen,
 		),
 		DomainGenImpl:  NewDomainGen(fs, domainGen),
 		HandlerGenImpl: NewHandlerGen(fs, handlerGen),
