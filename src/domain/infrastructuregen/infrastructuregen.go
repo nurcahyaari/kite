@@ -45,7 +45,7 @@ func (s *InfrastructureGenImpl) CreateInfrastructureDir(dto InfrastructureDto) e
 func (s *InfrastructureGenImpl) GenerateInfrastructure(dto InfrastructureDto) error {
 	databasePath := utils.ConcatDirPath(dto.InfrastructurePath, "database")
 
-	dbDto := dbgen.DBOption{
+	dbDto := dbgen.DatabaseDto{
 		GomodName:    dto.GomodName,
 		DatabasePath: databasePath,
 		DatabaseType: dto.DatabaseType,
@@ -55,7 +55,7 @@ func (s *InfrastructureGenImpl) GenerateInfrastructure(dto InfrastructureDto) er
 		return err
 	}
 
-	err = s.dbGen.CreateMysqlConnection(dbDto)
+	err = s.dbGen.CreateDatabaseConnection(dbDto)
 	if err != nil {
 		return err
 	}
