@@ -20,6 +20,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/internalgen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen/loggergen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen/utilsgen"
+	"github.com/nurcahyaari/kite/src/domain/miscgen"
 	"github.com/nurcahyaari/kite/src/domain/modulegen"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen/protocoltype"
@@ -175,6 +176,22 @@ var moduleGen = wire.NewSet(
 	),
 )
 
+var gitignoreGen = wire.NewSet(
+	miscgen.NewGitignoreGen,
+	wire.Bind(
+		new(miscgen.GitIgnoreGen),
+		new(*miscgen.GitIgnoreGenImpl),
+	),
+)
+
+var makefileGen = wire.NewSet(
+	miscgen.NewMakefileGen,
+	wire.Bind(
+		new(miscgen.MakefileGen),
+		new(*miscgen.MakefileGenImpl),
+	),
+)
+
 var handlerGen = wire.NewSet(
 	handlergen.NewHandlerGen,
 	wire.Bind(
@@ -224,6 +241,8 @@ func InitCliApp() *cli.CliImpl {
 		handlerGen,
 		domainGen,
 		appGenerator,
+		gitignoreGen,
+		makefileGen,
 		cliApp,
 		cliRouter,
 		cli.NewCliApp,

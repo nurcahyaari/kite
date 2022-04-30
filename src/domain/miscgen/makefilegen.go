@@ -13,7 +13,7 @@ type MakefileGenImpl struct {
 	fs database.FileSystem
 }
 
-func NewMakefile(
+func NewMakefileGen(
 	fs database.FileSystem,
 ) *MakefileGenImpl {
 	return &MakefileGenImpl{

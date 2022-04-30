@@ -10,11 +10,10 @@ type GitIgnoreGen interface {
 }
 
 type GitIgnoreGenImpl struct {
-	ProjectPath string
-	fs          database.FileSystem
+	fs database.FileSystem
 }
 
-func NewGitignore(fs database.FileSystem) *GitIgnoreGenImpl {
+func NewGitignoreGen(fs database.FileSystem) *GitIgnoreGenImpl {
 	return &GitIgnoreGenImpl{
 		fs: fs,
 	}
