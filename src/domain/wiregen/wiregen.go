@@ -79,6 +79,25 @@ func (s WireGenImpl) CreateWireEntryPoint(dto WireEntryPointDto) error {
 			Selector: "Build",
 		},
 	})
+	abstractCode.AddArgsToCallExpr(
+		null.StringFrom(dto.FunctionName),
+		ast.CallerSpec{
+			Func: ast.CallerFunc{
+				Name: ast.CallerSelecterExpr{
+					Name: "wire",
+				},
+				Selector: "Build",
+			},
+			Args: ast.CallerArgList{
+				&ast.CallerArg{
+					SelectorStmt: &ast.CallerArgSelectorStmt{
+						LibName:  "http",
+						DataType: "NewHttp",
+					},
+				},
+			},
+		},
+	)
 	err = abstractCode.RebuildCode()
 	if err != nil {
 		return err

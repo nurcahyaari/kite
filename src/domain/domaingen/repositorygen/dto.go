@@ -1,6 +1,8 @@
 package repositorygen
 
 type RepositoryDto struct {
-	Path      string
-	GomodName string
+	DomainName  string
+	Path        string
+	ProjectPath string
+	GomodName   string
 }

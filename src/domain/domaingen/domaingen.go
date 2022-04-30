@@ -7,6 +7,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/domaingen/servicegen"
 	"github.com/nurcahyaari/kite/src/domain/modulegen"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen"
+	"github.com/nurcahyaari/kite/src/domain/wiregen"
 )
 
 type DomainGen interface {
@@ -27,11 +28,12 @@ func NewDomainGen(
 	fs database.FileSystem,
 	moduleGen modulegen.ModuleGen,
 	protocolGen protocolgen.ProtocolGen,
+	wireGen wiregen.WireGen,
 ) *DomainGenImpl {
 	return &DomainGenImpl{
 		fs:                fs,
-		RepositoryGenImpl: repositorygen.NewRepositoryGen(fs, moduleGen),
-		ServiceGenImpl:    servicegen.NewServiceGen(fs, moduleGen, protocolGen),
+		RepositoryGenImpl: repositorygen.NewRepositoryGen(fs, moduleGen, wireGen),
+		ServiceGenImpl:    servicegen.NewServiceGen(fs, moduleGen, protocolGen, wireGen),
 	}
 }
 
@@ -56,8 +58,10 @@ func (s DomainGenImpl) createDomainFull(dto DomainDto) error {
 	servicePath := utils.ConcatDirPath(dto.Path, "service")
 
 	repoDto := repositorygen.RepositoryDto{
-		Path:      repoPath,
-		GomodName: dto.GomodName,
+		Path:        repoPath,
+		ProjectPath: dto.ProjectPath,
+		GomodName:   dto.GomodName,
+		DomainName:  dto.Name,
 	}
 	err := s.RepositoryGenImpl.CreateRepository(repoDto)
 	if err != nil {

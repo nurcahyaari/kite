@@ -10,6 +10,7 @@ import (
 	"github.com/nurcahyaari/kite/internal/utils/ast"
 	"github.com/nurcahyaari/kite/src/domain/modulegen"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen"
+	"github.com/nurcahyaari/kite/src/domain/wiregen"
 )
 
 type ServiceGen interface {
@@ -22,17 +23,20 @@ type ServiceGenImpl struct {
 	fs          database.FileSystem
 	moduleGen   modulegen.ModuleGen
 	protocolGen protocolgen.ProtocolGen
+	wireGen     wiregen.WireGen
 }
 
 func NewServiceGen(
 	fs database.FileSystem,
 	moduleGen modulegen.ModuleGen,
 	protocolGen protocolgen.ProtocolGen,
+	wireGen wiregen.WireGen,
 ) *ServiceGenImpl {
 	return &ServiceGenImpl{
 		fs:          fs,
 		moduleGen:   moduleGen,
 		protocolGen: protocolGen,
+		wireGen:     wireGen,
 	}
 }
 
@@ -151,6 +155,29 @@ func (s ServiceGenImpl) CreateServiceFile(dto ServiceDto) error {
 				return err
 			}
 		}
+	}
+
+	err = s.wireGen.AddDependencyAfterCreatingModule(wiregen.WireAddModuleDto{
+		WireDto: wiregen.WireDto{
+			ProjectPath: dto.ProjectPath,
+			GomodName:   dto.GomodName,
+		},
+		Dependency: ast.WireDependencyInjection{
+			VarName:                   fmt.Sprintf("%sSvc", dto.DomainName),
+			TargetInjectName:          fmt.Sprintf("%ssvc", dto.DomainName),
+			TargetInjectConstructName: "NewService",
+			InterfaceLib:              fmt.Sprintf("%ssvc", dto.DomainName),
+			InterfaceName:             "Service",
+			StructLib:                 fmt.Sprintf("%ssvc", dto.DomainName),
+			StructName:                "ServiceImpl",
+		},
+		Import: ast.ImportSpec{
+			Name: fmt.Sprintf("%ssvc", dto.DomainName),
+			Path: fmt.Sprintf("\"%s\"", utils.GetImportPathBasedOnProjectPath(dto.Path, dto.GomodName)),
+		},
+	})
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -9,6 +9,7 @@ import (
 	"github.com/nurcahyaari/kite/internal/utils"
 	"github.com/nurcahyaari/kite/internal/utils/ast"
 	"github.com/nurcahyaari/kite/src/domain/modulegen"
+	"github.com/nurcahyaari/kite/src/domain/wiregen"
 )
 
 type RepositoryGen interface {
@@ -20,15 +21,18 @@ type RepositoryGen interface {
 type RepositoryGenImpl struct {
 	fs        database.FileSystem
 	moduleGen modulegen.ModuleGen
+	wireGen   wiregen.WireGen
 }
 
 func NewRepositoryGen(
 	fs database.FileSystem,
 	moduleGen modulegen.ModuleGen,
+	wireGen wiregen.WireGen,
 ) *RepositoryGenImpl {
 	return &RepositoryGenImpl{
 		fs:        fs,
 		moduleGen: moduleGen,
+		wireGen:   wireGen,
 	}
 }
 
@@ -113,6 +117,29 @@ func (s RepositoryGenImpl) CreateRepositoryFile(dto RepositoryDto) error {
 	templateBaseFileString := abstractCode.GetCode()
 
 	err = s.fs.CreateFileIfNotExists(dto.Path, "repository.go", templateBaseFileString)
+	if err != nil {
+		return err
+	}
+
+	err = s.wireGen.AddDependencyAfterCreatingModule(wiregen.WireAddModuleDto{
+		WireDto: wiregen.WireDto{
+			ProjectPath: dto.ProjectPath,
+			GomodName:   dto.GomodName,
+		},
+		Dependency: ast.WireDependencyInjection{
+			VarName:                   fmt.Sprintf("%sRepo", dto.DomainName),
+			TargetInjectName:          fmt.Sprintf("%srepo", dto.DomainName),
+			TargetInjectConstructName: "NewRepository",
+			InterfaceLib:              fmt.Sprintf("%srepo", dto.DomainName),
+			InterfaceName:             "Repository",
+			StructLib:                 fmt.Sprintf("%srepo", dto.DomainName),
+			StructName:                "RepositoryImpl",
+		},
+		Import: ast.ImportSpec{
+			Name: fmt.Sprintf("%srepo", dto.DomainName),
+			Path: fmt.Sprintf("\"%s\"", utils.GetImportPathBasedOnProjectPath(dto.Path, dto.GomodName)),
+		},
+	})
 	if err != nil {
 		return err
 	}

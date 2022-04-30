@@ -93,13 +93,11 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 	// create file in project path dir level
 	err = s.envGen.CreateEnvFile(dto.ProjectPath)
 	if err != nil {
-		fmt.Println("Err1")
 		return err
 	}
 
 	err = s.envGen.CreateEnvExampleFile(dto.ProjectPath)
 	if err != nil {
-		fmt.Println("Err1")
 		return err
 	}
 
@@ -108,7 +106,6 @@ func (s AppGenNewImpl) CreateNewApp(dto AppNewDto) error {
 		GomodName:   dto.GoModName,
 	})
 	if err != nil {
-		fmt.Println("Err1")
 		return err
 	}
 
