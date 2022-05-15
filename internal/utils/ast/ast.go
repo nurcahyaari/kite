@@ -20,6 +20,7 @@ type AbstractCodeImpl struct {
 
 type AbstractCode interface {
 	GetCode() string
+	GetPackageName() string
 	AddImport(importSpec ImportSpec)
 	AddInterfaces(interfaceSpecs InterfaceSpecList)
 	AddInterfaceFuncDecl() error
@@ -53,6 +54,10 @@ func NewAbstractCode(code string, parserMode parser.Mode) AbstractCode {
 
 func (a *AbstractCodeImpl) GetCode() string {
 	return a.code
+}
+
+func (a AbstractCodeImpl) GetPackageName() string {
+	return a.file.Name.Name
 }
 
 func (a *AbstractCodeImpl) AddImport(importSpec ImportSpec) {
@@ -631,9 +636,19 @@ func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDepende
 	}
 
 	var wireGenDecl *ast.GenDecl
+
+	var arg ast.Expr
+	if wireDependency.TargetInjectName == "" {
+		arg = ast.NewIdent(wireDependency.TargetInjectConstructName)
+	} else {
+		arg = &ast.SelectorExpr{
+			X:   ast.NewIdent(wireDependency.TargetInjectName),
+			Sel: ast.NewIdent(wireDependency.TargetInjectConstructName),
+		}
+	}
+
 	if wireDependency.InterfaceLib == "" && wireDependency.InterfaceName == "" &&
 		wireDependency.StructLib == "" && wireDependency.StructName == "" {
-		// a.file.Decls[idx] =
 		wireGenDecl = &ast.GenDecl{
 			Tok: token.VAR,
 			Specs: []ast.Spec{
@@ -654,10 +669,7 @@ func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDepende
 								Sel: ast.NewIdent("NewSet"),
 							},
 							Args: []ast.Expr{
-								&ast.SelectorExpr{
-									X:   ast.NewIdent(wireDependency.TargetInjectName),
-									Sel: ast.NewIdent(wireDependency.TargetInjectConstructName),
-								},
+								arg,
 							},
 						},
 					},
@@ -685,10 +697,7 @@ func (a *AbstractCodeImpl) AddWireDependencyInjection(wireDependency WireDepende
 								Sel: ast.NewIdent("NewSet"),
 							},
 							Args: []ast.Expr{
-								&ast.SelectorExpr{
-									X:   ast.NewIdent(wireDependency.TargetInjectName),
-									Sel: ast.NewIdent(wireDependency.TargetInjectConstructName),
-								},
+								arg,
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X:   ast.NewIdent("wire"),

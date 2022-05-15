@@ -52,6 +52,9 @@ func (s *MysqlGenImpl) CreateMysqlConnection(dto DatabaseTypeDto) error {
 		Path: "\"github.com/jmoiron/sqlx\"",
 	})
 	databaseAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"github.com/nurcahyaari/sqlabst\"",
+	})
+	databaseAbstractCode.AddImport(ast.ImportSpec{
 		Path: "\"github.com/rs/zerolog/log\"",
 	})
 

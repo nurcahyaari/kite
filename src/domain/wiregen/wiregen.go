@@ -145,12 +145,14 @@ func (s WireGenImpl) AddDependencyAfterCreatingModule(dto WireAddModuleDto) erro
 	astCode := abstractCode.GetCode()
 
 	abstractCode = ast.NewAbstractCode(astCode, parser.ParseComments)
-	abstractCode.AddImport(dto.Import)
-	err = abstractCode.RebuildCode()
-	if err != nil {
-		return err
+	if dto.Import.Name != "" && dto.Import.Path != "" {
+		abstractCode.AddImport(dto.Import)
+		err = abstractCode.RebuildCode()
+		if err != nil {
+			return err
+		}
+		astCode = abstractCode.GetCode()
 	}
-	astCode = abstractCode.GetCode()
 
 	return s.fs.ReplaceFile(dto.ProjectPath, "wire.go", astCode)
 }

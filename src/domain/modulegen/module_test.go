@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/nurcahyaari/kite/src/domain/modulegen"
+	"github.com/nurcahyaari/kite/src/domain/wiregen"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,7 +31,7 @@ func NewService() *ServiceImpl {
 `
 			},
 			act: func() (string, error) {
-				mg := modulegen.NewModuleGen()
+				mg := modulegen.NewModuleGen(nil, wiregen.NewWire(nil))
 				return mg.BuildModuleTemplate(modulegen.ModuleDto{
 					ModuleName:  "Service",
 					PackageName: "service",
@@ -56,7 +57,7 @@ func NewRepository() *RepositoryImpl {
 `
 			},
 			act: func() (string, error) {
-				mg := modulegen.NewModuleGen()
+				mg := modulegen.NewModuleGen(nil, wiregen.NewWire(nil))
 				return mg.BuildModuleTemplate(modulegen.ModuleDto{
 					ModuleName:  "Repository",
 					PackageName: "repository",

@@ -1,6 +1,6 @@
 
 type MysqlImpl struct {
-	DB *sqlx.DB
+	DB *sqlabst.SqlAbst
 }
 
 func NewMysqlClient() *MysqlImpl {
@@ -24,6 +24,6 @@ func NewMysqlClient() *MysqlImpl {
 
 	log.Info().Str("Name", dbName).Msg("Success connect to MySql DB")
 	return &MysqlImpl{
-		DB: db,
+		DB: sqlabst.NewSqlAbst(db),
 	}
 }

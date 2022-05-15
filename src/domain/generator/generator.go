@@ -9,6 +9,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/infrastructuregen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen"
 	"github.com/nurcahyaari/kite/src/domain/miscgen"
+	"github.com/nurcahyaari/kite/src/domain/modulegen"
 	"github.com/nurcahyaari/kite/src/domain/srcgen"
 	"github.com/nurcahyaari/kite/src/domain/wiregen"
 )
@@ -17,12 +18,14 @@ type AppGenerator interface {
 	AppGenNew
 	DomainGen
 	HandlerGen
+	ModuleGen
 }
 
 type AppGeneratorImpl struct {
 	*AppGenNewImpl
 	*DomainGenImpl
 	*HandlerGenImpl
+	*ModuleGenImpl
 }
 
 func NewAppGenerator(
@@ -37,6 +40,7 @@ func NewAppGenerator(
 	handlerGen handlergen.HandlerGen,
 	gitignoreGen miscgen.GitIgnoreGen,
 	makefileGen miscgen.MakefileGen,
+	moduleGen modulegen.ModuleGen,
 ) *AppGeneratorImpl {
 	return &AppGeneratorImpl{
 		AppGenNewImpl: NewApp(
@@ -53,5 +57,6 @@ func NewAppGenerator(
 		),
 		DomainGenImpl:  NewDomainGen(fs, domainGen),
 		HandlerGenImpl: NewHandlerGen(fs, handlerGen),
+		ModuleGenImpl:  NewModuleGen(fs, moduleGen),
 	}
 }

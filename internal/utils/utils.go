@@ -7,13 +7,16 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
+	"unicode"
 
 	"golang.org/x/mod/modfile"
 )
 
 func CapitalizeFirstLetter(s string) string {
-	return strings.Title(strings.ToLower(s))
+	r := []rune(s)
+	return string(append([]rune{unicode.ToUpper(r[0])}, r[1:]...))
 }
 
 func ConcatDirPath(dir ...string) string {
@@ -96,9 +99,17 @@ func IsFolderHasGoMod(path string) bool {
 	return s != ""
 }
 
-func GetAppNameBasedOnGoMod(goModName string) string {
-	appName := strings.Split(goModName, "/")
-	return CapitalizeFirstLetter(appName[len(appName)-1])
+func GetProjectPath(path string, pointingPath string) string {
+	pathSplit := strings.Split(path, pointingPath)
+	return pathSplit[0]
+}
+
+func GetLastDirPath(path string) string {
+	if path[len(path)-1] == '/' {
+		path = path[:len(path)-1]
+	}
+	paths := strings.Split(path, "/")
+	return strings.ToLower(paths[len(paths)-1])
 }
 
 func GoFormat(path, goModName string) error {
@@ -134,4 +145,20 @@ func GoModInit(projectPath, goModName string) error {
 func GetImportPathBasedOnProjectPath(projectPath, gomodName string) string {
 	s := strings.Split(projectPath, gomodName)
 	return ConcatDirPath(gomodName, RemoveSlashFirstAndLast(s[1]))
+}
+
+func GetGoFilesInPath(path string) ([]string, error) {
+	paths := []string{}
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range files {
+		if !file.IsDir() && filepath.Ext(file.Name()) == ".go" {
+			paths = append(paths, ConcatDirPath(path, file.Name()))
+		}
+	}
+
+	return paths, nil
 }

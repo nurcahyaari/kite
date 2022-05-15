@@ -23,10 +23,34 @@ func NewDomainCreationalType(t string) DomainCreationalType {
 	return dt
 }
 
+type DomainType int
+
+const (
+	SingleDomain DomainType = iota
+	MultiDomain
+)
+
+const (
+	TypeSingleDomain = "Singledomain"
+	TypeMultiDomain  = "Multidomain"
+)
+
+func NewDomainType(t string) DomainType {
+	var dt DomainType
+	switch t {
+	case TypeMultiDomain:
+		dt = MultiDomain
+	default:
+		dt = SingleDomain
+	}
+	return dt
+}
+
 type DomainDto struct {
 	Name                 string
 	Path                 string
 	ProjectPath          string
 	GomodName            string
 	DomainCreationalType DomainCreationalType
+	DomainType           DomainType
 }
