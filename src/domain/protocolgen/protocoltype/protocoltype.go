@@ -7,7 +7,7 @@ import (
 )
 
 type ProtocolType interface {
-	ProtocolHttpGen
+	ProtocolTypeGen
 }
 
 type ProtocolTypeImpl struct {

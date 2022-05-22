@@ -48,6 +48,9 @@ func (s ConfigGenImpl) CreateConfigFile(option ConfigDto) error {
 		Path: "\"log\"",
 	})
 	configAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"time\"",
+	})
+	configAbstractCode.AddImport(ast.ImportSpec{
 		Path: "\"sync\"",
 	})
 	configAbstractCode.AddImport(ast.ImportSpec{

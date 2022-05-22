@@ -219,8 +219,18 @@ func (s AppGenNewImpl) createMainApp(dto AppNewDto) error {
 
 	mainAbstractCode := ast.NewAbstractCode(mainTemplate, parser.ParseComments)
 	mainAbstractCode.AddImport(ast.ImportSpec{
+		Path: "\"context\"",
+	})
+	mainAbstractCode.AddImport(ast.ImportSpec{
+		Path: fmt.Sprintf("\"%s/config\"", dto.GoModName),
+	})
+	mainAbstractCode.AddImport(ast.ImportSpec{
+		Path: fmt.Sprintf("\"%s/internal/graceful\"", dto.GoModName),
+	})
+	mainAbstractCode.AddImport(ast.ImportSpec{
 		Path: fmt.Sprintf("\"%s/internal/logger\"", dto.GoModName),
 	})
+
 	mainAbstractCode.AddCommentOutsideFunction(ast.Comment{
 		Value: "//go:generate go run github.com/google/wire/cmd/wire",
 	})

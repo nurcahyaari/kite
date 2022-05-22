@@ -23,9 +23,6 @@ type ProtocolHttpGen interface {
 	createProtocolInternalHttpFile(dto ProtocolDto) error
 	createInternalHttpRouteDir(dto ProtocolDto) error
 	createInternalHttpRouteFile(dto ProtocolDto) error
-	CreateProtocolSrcHttpBaseFile(dto ProtocolDto) error
-	CreateProtocolInternalHttp(dto ProtocolDto) error
-	CreateProtocolSrcHttpHandler(dto ProtocolDto) error
 }
 
 type ProtocolHttpGenImpl struct {
@@ -283,9 +280,6 @@ func (s *ProtocolHttpGenImpl) createInternalHttpRouteFile(dto ProtocolDto) error
 		Path: "\"github.com/go-chi/chi/v5\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
-		Path: "\"github.com/go-chi/cors\"",
-	})
-	abstractCode.AddImport(ast.ImportSpec{
 		Name: "httpswagger",
 		Path: "\"github.com/swaggo/http-swagger\"",
 	})
@@ -381,14 +375,34 @@ func (s *ProtocolHttpGenImpl) createProtocolInternalHttpFile(dto ProtocolDto) er
 			},
 		},
 	})
+	abstractCode.AddStructVarDecl(ast.StructArgList{
+		&ast.StructArg{
+			StructName: "HttpImpl",
+			IsPointer:  true,
+			Name:       "httpServer",
+			DataType: ast.StructDtypes{
+				LibName:  "http",
+				TypeName: "Server",
+			},
+		},
+	})
 	abstractCode.AddImport(ast.ImportSpec{
 		Path: "\"fmt\"",
+	})
+	abstractCode.AddImport(ast.ImportSpec{
+		Path: "\"context\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
 		Path: "\"net/http\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
 		Path: "\"github.com/go-chi/chi/v5\"",
+	})
+	abstractCode.AddImport(ast.ImportSpec{
+		Path: "\"github.com/go-chi/cors\"",
+	})
+	abstractCode.AddImport(ast.ImportSpec{
+		Path: "\"github.com/rs/zerolog/log\"",
 	})
 	abstractCode.AddImport(ast.ImportSpec{
 		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(dto.GomodName, "config")),
@@ -432,7 +446,7 @@ func (s *ProtocolHttpGenImpl) createProtocolInternalHttpFile(dto ProtocolDto) er
 }
 
 // create internal/http directory and all of the assets
-func (s *ProtocolHttpGenImpl) CreateProtocolInternalHttp(dto ProtocolDto) error {
+func (s *ProtocolHttpGenImpl) CreateProtocolInternal(dto ProtocolDto) error {
 	var err error
 
 	err = s.createProtocolInternalHttpFile(dto)
@@ -464,7 +478,7 @@ func (s *ProtocolHttpGenImpl) CreateProtocolInternalHttp(dto ProtocolDto) error 
 }
 
 // create src/http directory and the assets
-func (s *ProtocolHttpGenImpl) CreateProtocolSrcHttpBaseFile(dto ProtocolDto) error {
+func (s *ProtocolHttpGenImpl) CreateProtocolSrcBaseFile(dto ProtocolDto) error {
 	templateNew := templates.NewTemplateNewImpl("http", "")
 	templateCode, err := templateNew.Render("", nil)
 	if err != nil {
@@ -543,9 +557,9 @@ func (s *ProtocolHttpGenImpl) CreateProtocolSrcHttpBaseFile(dto ProtocolDto) err
 	return nil
 }
 
-func (s ProtocolHttpGenImpl) CreateProtocolSrcHttpHandler(dto ProtocolDto) error {
+func (s ProtocolHttpGenImpl) CreateProtocolSrc(dto ProtocolDto) error {
 	if exist := s.fs.IsFileExists(utils.ConcatDirPath(dto.Path, "http_handler.go")); !exist {
-		s.CreateProtocolSrcHttpBaseFile(dto)
+		s.CreateProtocolSrcBaseFile(dto)
 	}
 
 	return s.emptyGen.CreateEmptyGolangFile(emptygen.EmptyDto{

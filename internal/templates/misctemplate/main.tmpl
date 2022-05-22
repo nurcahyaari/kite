@@ -1,8 +1,18 @@
 func main() {
-
-	// All application bootstraping will be here
-	// such as routing, config, etc
 	logger.InitLogger()
 
-	InitHttpProtocol().Listen()
+	initProtocol := InitHttpProtocol()
+
+	graceful.GracefulShutdown(
+		context.TODO(),
+		config.Get().Application.Graceful.MaxSecond,
+		map[string]graceful.Operation{
+			// place your service that need to graceful shutdown here
+		},
+	)
+
+	// init http protocol
+	initProtocol.Listen()
+
+	// init other protocols here
 }
