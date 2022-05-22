@@ -3,6 +3,7 @@ package protocolgen
 import (
 	"fmt"
 	"go/parser"
+	"strings"
 
 	"github.com/nurcahyaari/kite/infrastructure/database"
 	"github.com/nurcahyaari/kite/internal/utils"
@@ -155,7 +156,7 @@ func (s *ProtocolGenImpl) InjectDomainServiceIntoHandler(dto ProtocolDto) error 
 			&ast.FunctionArg{
 				Name:     fmt.Sprintf("%sSvc", dto.DomainName),
 				LibName:  importAlias,
-				DataType: "Service",
+				DataType: fmt.Sprintf("%sService", strings.Title(dto.DomainName)),
 			},
 		},
 	})
@@ -165,7 +166,7 @@ func (s *ProtocolGenImpl) InjectDomainServiceIntoHandler(dto ProtocolDto) error 
 			Name:       fmt.Sprintf("%sSvc", dto.DomainName),
 			DataType: ast.StructDtypes{
 				LibName:  importAlias,
-				TypeName: "Service",
+				TypeName: fmt.Sprintf("%sService", strings.Title(dto.DomainName)),
 			},
 			IsPointer: false,
 		},

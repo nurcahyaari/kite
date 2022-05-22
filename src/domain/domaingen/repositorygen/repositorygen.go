@@ -2,10 +2,8 @@ package repositorygen
 
 import (
 	"fmt"
-	"go/parser"
 
 	"github.com/nurcahyaari/kite/infrastructure/database"
-	"github.com/nurcahyaari/kite/internal/templates"
 	"github.com/nurcahyaari/kite/internal/utils"
 	"github.com/nurcahyaari/kite/internal/utils/ast"
 	"github.com/nurcahyaari/kite/src/domain/modulegen"
@@ -51,48 +49,28 @@ func (s RepositoryGenImpl) CreateRepositoryDir(dto RepositoryDto) error {
 }
 
 func (s RepositoryGenImpl) CreateRepositoryFile(dto RepositoryDto) error {
-	templateNew := templates.NewTemplateNewImpl("repository", "")
-	templateCode, err := templateNew.Render("", nil)
-	if err != nil {
-		return err
-	}
+	var addFuncArgs *ast.FunctionArgList
+	var addFuncArgToReturn *ast.FunctionReturnArgsSpec
+	var addStructVarDecl *ast.StructArgList
+	var addImport *ast.ImportSpec
 
-	abstractCode := ast.NewAbstractCode(templateCode, parser.ParseComments)
-	abstractCode.AddFunction(ast.FunctionSpecList{
-		&ast.FunctionSpec{
-			Name: "NewRepository",
-			Args: ast.FunctionArgList{
-				&ast.FunctionArg{
-					IsPointer: true,
-					Name:      "db",
-					LibName:   "database",
-					DataType:  "MysqlImpl",
-				},
-			},
-			Returns: &ast.FunctionReturnSpecList{
-				&ast.FunctionReturnSpec{
-					IsPointer: true,
-					IsStruct:  true,
-					DataType:  "RepositoryImpl",
-					Return:    "RepositoryImpl",
-				},
-			},
+	addFuncArgs = &ast.FunctionArgList{
+		&ast.FunctionArg{
+			IsPointer: true,
+			Name:      "db",
+			LibName:   "database",
+			DataType:  "MysqlImpl",
 		},
-	})
-	abstractCode.AddFunctionArgsToReturn(ast.FunctionReturnArgsSpec{
-		FuncName:      "NewRepository",
-		ReturnName:    "RepositoryImpl",
+	}
+	addFuncArgToReturn = &ast.FunctionReturnArgsSpec{
+		FuncName:      fmt.Sprintf("New%sRepository", utils.CapitalizeFirstLetter(dto.DomainName)),
+		ReturnName:    fmt.Sprintf("%sRepositoryImpl", utils.CapitalizeFirstLetter(dto.DomainName)),
 		DataTypeKey:   "db",
 		DataTypeValue: "db",
-	})
-	abstractCode.AddStructs(ast.StructSpecList{
-		&ast.StructSpec{
-			Name: "RepositoryImpl",
-		},
-	})
-	abstractCode.AddStructVarDecl(ast.StructArgList{
+	}
+	addStructVarDecl = &ast.StructArgList{
 		&ast.StructArg{
-			StructName: "RepositoryImpl",
+			StructName: fmt.Sprintf("%sRepositoryImpl", utils.CapitalizeFirstLetter(dto.DomainName)),
 			IsPointer:  true,
 			Name:       "db",
 			DataType: ast.StructDtypes{
@@ -100,49 +78,23 @@ func (s RepositoryGenImpl) CreateRepositoryFile(dto RepositoryDto) error {
 				TypeName: "MysqlImpl",
 			},
 		},
-	})
-	abstractCode.AddInterfaces(ast.InterfaceSpecList{
-		&ast.InterfaceSpec{
-			Name:       "Repository",
-			StructName: "RepositoryImpl",
-		},
-	})
-	abstractCode.AddImport(ast.ImportSpec{
+	}
+	addImport = &ast.ImportSpec{
 		Path: fmt.Sprintf("\"%s\"", utils.ConcatDirPath(dto.GomodName, "infrastructure", "database")),
+	}
+
+	err := s.moduleGen.CreateNewModule(modulegen.ModuleDto{
+		PackageName:        "repository",
+		FileName:           "repository",
+		ModuleName:         fmt.Sprintf("%sRepository", utils.CapitalizeFirstLetter(dto.DomainName)),
+		Path:               dto.Path,
+		ProjectPath:        dto.ProjectPath,
+		GomodName:          dto.GomodName,
+		AddFuncArgs:        addFuncArgs,
+		AddFuncArgToReturn: addFuncArgToReturn,
+		AddStructVarDecl:   addStructVarDecl,
+		AddImport:          addImport,
 	})
-	err = abstractCode.RebuildCode()
-	if err != nil {
-		return err
-	}
-	templateBaseFileString := abstractCode.GetCode()
 
-	err = s.fs.CreateFileIfNotExists(dto.Path, "repository.go", templateBaseFileString)
-	if err != nil {
-		return err
-	}
-
-	err = s.wireGen.AddDependencyAfterCreatingModule(wiregen.WireAddModuleDto{
-		WireDto: wiregen.WireDto{
-			ProjectPath: dto.ProjectPath,
-			GomodName:   dto.GomodName,
-		},
-		Dependency: ast.WireDependencyInjection{
-			VarName:                   fmt.Sprintf("%sRepo", dto.DomainName),
-			TargetInjectName:          fmt.Sprintf("%srepo", dto.DomainName),
-			TargetInjectConstructName: "NewRepository",
-			InterfaceLib:              fmt.Sprintf("%srepo", dto.DomainName),
-			InterfaceName:             "Repository",
-			StructLib:                 fmt.Sprintf("%srepo", dto.DomainName),
-			StructName:                "RepositoryImpl",
-		},
-		Import: ast.ImportSpec{
-			Name: fmt.Sprintf("%srepo", dto.DomainName),
-			Path: fmt.Sprintf("\"%s\"", utils.GetImportPathBasedOnProjectPath(dto.Path, dto.GomodName)),
-		},
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

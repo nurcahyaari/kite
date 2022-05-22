@@ -108,7 +108,25 @@ func (s CliRouterImpl) CreateNewHandler(ctx *cli.Context, path string) error {
 }
 
 func (s CliRouterImpl) CreateNewModule(ctx *cli.Context, path string) error {
-	// TODO: write code to implement create module here
 	// all of dependency is a module, module = dependency in this code generator
-	return nil
+
+	if ctx.String("path") != "" {
+		path = fmt.Sprintf("%s/", ctx.String("path"))
+	}
+	moduleName := ctx.String("name")
+
+	moduleDto := generator.ModuleNewDto{
+		ProjectInfo: generator.ProjectInfo{
+			Name:        moduleName,
+			ProjectPath: path,
+		},
+	}
+
+	if err := moduleDto.Validate(); err != nil {
+		return err
+	}
+
+	err := s.appGenerator.CreateNewModule(moduleDto)
+
+	return err
 }

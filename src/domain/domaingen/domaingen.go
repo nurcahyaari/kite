@@ -3,8 +3,11 @@ package domaingen
 import (
 	"github.com/nurcahyaari/kite/infrastructure/database"
 	"github.com/nurcahyaari/kite/internal/utils"
+	"github.com/nurcahyaari/kite/src/domain/domaingen/dtogen"
+	"github.com/nurcahyaari/kite/src/domain/domaingen/entitygen"
 	"github.com/nurcahyaari/kite/src/domain/domaingen/repositorygen"
 	"github.com/nurcahyaari/kite/src/domain/domaingen/servicegen"
+	"github.com/nurcahyaari/kite/src/domain/emptygen"
 	"github.com/nurcahyaari/kite/src/domain/modulegen"
 	"github.com/nurcahyaari/kite/src/domain/protocolgen"
 	"github.com/nurcahyaari/kite/src/domain/wiregen"
@@ -13,6 +16,8 @@ import (
 type DomainGen interface {
 	repositorygen.RepositoryGen
 	servicegen.ServiceGen
+	dtogen.DtoGen
+	entitygen.EntityGen
 	CreateDomain(dto DomainDto) error
 	createDomainFull(dto DomainDto) error
 	createDomainFolderOnly(path string) error
@@ -22,6 +27,8 @@ type DomainGenImpl struct {
 	fs database.FileSystem
 	*repositorygen.RepositoryGenImpl
 	*servicegen.ServiceGenImpl
+	*dtogen.DtoGenImpl
+	*entitygen.EntityGenImpl
 }
 
 func NewDomainGen(
@@ -29,11 +36,14 @@ func NewDomainGen(
 	moduleGen modulegen.ModuleGen,
 	protocolGen protocolgen.ProtocolGen,
 	wireGen wiregen.WireGen,
+	emptyGen emptygen.EmptyGen,
 ) *DomainGenImpl {
 	return &DomainGenImpl{
 		fs:                fs,
 		RepositoryGenImpl: repositorygen.NewRepositoryGen(fs, moduleGen, wireGen),
 		ServiceGenImpl:    servicegen.NewServiceGen(fs, moduleGen, protocolGen, wireGen),
+		DtoGenImpl:        dtogen.NewEntityGen(fs, emptyGen),
+		EntityGenImpl:     entitygen.NewEntityGen(fs, emptyGen),
 	}
 }
 
@@ -56,6 +66,26 @@ func (s DomainGenImpl) createDomainFull(dto DomainDto) error {
 	}
 	repoPath := utils.ConcatDirPath(dto.Path, "repository")
 	servicePath := utils.ConcatDirPath(dto.Path, "service")
+	dtoPath := utils.ConcatDirPath(dto.Path, "dto")
+	entityPath := utils.ConcatDirPath(dto.Path, "entity")
+
+	dtoDto := dtogen.DtoGenDto{
+		Path:       dtoPath,
+		DomainName: dto.Name,
+	}
+	err := s.DtoGenImpl.CreateDto(dtoDto)
+	if err != nil {
+		return err
+	}
+
+	entityDto := entitygen.EntityGenDto{
+		Path:       entityPath,
+		DomainName: dto.Name,
+	}
+	err = s.EntityGenImpl.CreateEntity(entityDto)
+	if err != nil {
+		return err
+	}
 
 	repoDto := repositorygen.RepositoryDto{
 		Path:        repoPath,
@@ -63,7 +93,7 @@ func (s DomainGenImpl) createDomainFull(dto DomainDto) error {
 		GomodName:   dto.GomodName,
 		DomainName:  dto.Name,
 	}
-	err := s.RepositoryGenImpl.CreateRepository(repoDto)
+	err = s.RepositoryGenImpl.CreateRepository(repoDto)
 	if err != nil {
 		return err
 	}

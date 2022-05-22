@@ -1,5 +1,7 @@
 package modulegen
 
+import "github.com/nurcahyaari/kite/internal/utils/ast"
+
 type ModuleType int
 
 func NewModuleTypeFromString(s string) ModuleType {
@@ -54,8 +56,14 @@ func (m ModuleType) ToString() string {
 }
 
 type ModuleDto struct {
-	PackageName string
-	ModuleName  string
-	Path        string
-	GomodName   string
+	PackageName        string
+	FileName           string
+	ModuleName         string
+	Path               string
+	ProjectPath        string
+	GomodName          string
+	AddFuncArgs        *ast.FunctionArgList
+	AddFuncArgToReturn *ast.FunctionReturnArgsSpec
+	AddStructVarDecl   *ast.StructArgList
+	AddImport          *ast.ImportSpec
 }

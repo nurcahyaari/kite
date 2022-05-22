@@ -129,6 +129,28 @@ func (s CliImpl) CreateNewCliApp() {
 				return s.clirouter.CreateNewHandler(ctx, path)
 			},
 		},
+		{
+			Name:        "module",
+			Description: "Make a new module",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:  "name",
+					Value: "",
+					Usage: "module name",
+				},
+				&cli.StringFlag{
+					Name:  "path",
+					Value: "",
+					Usage: "Path of a new module",
+				},
+			},
+			Action: func(ctx *cli.Context) error {
+				spinner.Message(" Creating Module ")
+				spinner.StopMessage(" New Module was created ")
+				spinner.Start()
+				return s.clirouter.CreateNewModule(ctx, path)
+			},
+		},
 	}
 
 	err = s.cli.Run(os.Args)

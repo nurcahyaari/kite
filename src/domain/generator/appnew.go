@@ -256,6 +256,7 @@ func (s AppGenNewImpl) installPackage() error {
 			"github.com/google/wire/cmd/wire",
 			"github.com/swaggo/swag/cmd/swag",
 			"github.com/swaggo/http-swagger",
+			"github.com/nurcahyaari/sqlabst",
 		},
 	}
 

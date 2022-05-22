@@ -9,6 +9,10 @@ type ErrorResp struct {
 	ErrList []string
 }
 
+func (r ErrorResp) IsEmpty() bool {
+	return len(r.ErrList) > 0
+}
+
 func (r *ErrorResp) Error() string {
 	return strings.Join(r.ErrList, ",")
 }
