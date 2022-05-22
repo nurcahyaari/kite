@@ -1,12 +1,12 @@
 # What it is
 
-Kite is a Golang Code Generation inspired by Clean Code Architecture
+Kite is a golang project structure's code generation that build the base project and provide tools to help for creating a new projects
 
 # Installation
 
 Clone this repo
 ```bash
-git clone https://github.com/nurcahyaari/Kite.git
+git clone https://github.com/nurcahyaari/kite.git
 ```
 
 then open the directory in your terminal app.
