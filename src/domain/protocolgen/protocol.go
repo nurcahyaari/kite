@@ -63,7 +63,7 @@ func (s *ProtocolGenImpl) CreateProtocolInternalType(dto ProtocolDto) error {
 
 	switch dto.ProtocolType {
 	case Http:
-		err = s.protocolType.CreateProtocolInternalHttp(protocolDto)
+		err = s.protocolType.CreateProtocolInternal(protocolDto)
 	}
 	if err != nil {
 		return err
@@ -92,7 +92,7 @@ func (s *ProtocolGenImpl) CreateProtocolSrcBaseFile(dto ProtocolDto) error {
 
 		switch dto.ProtocolType {
 		case Http:
-			err = s.protocolType.CreateProtocolSrcHttpBaseFile(protocolDto)
+			err = s.protocolType.CreateProtocolSrcBaseFile(protocolDto)
 		}
 
 		if err != nil {
@@ -122,7 +122,7 @@ func (s *ProtocolGenImpl) CreateProtocolSrcHandler(dto ProtocolDto) error {
 
 		switch dto.ProtocolType {
 		case Http:
-			err = s.protocolType.CreateProtocolSrcHttpHandler(protocolDto)
+			err = s.protocolType.CreateProtocolSrc(protocolDto)
 		}
 
 		if err != nil {

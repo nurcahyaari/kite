@@ -4,6 +4,7 @@ import (
 	"github.com/nurcahyaari/kite/infrastructure/database"
 	"github.com/nurcahyaari/kite/internal/utils"
 
+	"github.com/nurcahyaari/kite/src/domain/internalgen/gracefulgen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen/loggergen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen/utilsgen"
 	protocol "github.com/nurcahyaari/kite/src/domain/protocolgen"
@@ -18,6 +19,7 @@ type InternalGenImpl struct {
 	loggerGen   loggergen.LoggerGen
 	utilGen     utilsgen.UtilGen
 	protocolGen protocol.ProtocolGen
+	gracefulGen gracefulgen.GracefulGen
 	fs          database.FileSystem
 }
 
@@ -26,12 +28,14 @@ func NewInternal(
 	loggerGen loggergen.LoggerGen,
 	utilGen utilsgen.UtilGen,
 	protocolGen protocol.ProtocolGen,
+	gracefulGen gracefulgen.GracefulGen,
 ) *InternalGenImpl {
 	return &InternalGenImpl{
 		fs:          fs,
 		loggerGen:   loggerGen,
 		utilGen:     utilGen,
 		protocolGen: protocolGen,
+		gracefulGen: gracefulGen,
 	}
 }
 
@@ -43,6 +47,7 @@ func (s InternalGenImpl) CreateInternalModules(dto InternalDto) error {
 	loggerPath := utils.ConcatDirPath(dto.Path, "logger")
 	utilsPath := utils.ConcatDirPath(dto.Path, "utils")
 	protocolPath := utils.ConcatDirPath(dto.Path, "protocols")
+	gracefulPath := utils.ConcatDirPath(dto.Path, "graceful")
 
 	loggerGenDto := loggergen.LoggerDto{
 		Path: loggerPath,
@@ -62,6 +67,15 @@ func (s InternalGenImpl) CreateInternalModules(dto InternalDto) error {
 	}
 
 	err = s.utilGen.CreateUtilModules(utilDto)
+	if err != nil {
+		return err
+	}
+
+	gracefulDto := gracefulgen.GracefulGenDto{
+		ProjectPath: dto.ProjectPath,
+		Path:        gracefulPath,
+	}
+	err = s.gracefulGen.CreateGraceful(gracefulDto)
 	if err != nil {
 		return err
 	}

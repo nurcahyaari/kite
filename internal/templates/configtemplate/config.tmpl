@@ -11,6 +11,9 @@ type Config struct {
 				Private string `mapstructure:"PRIVATE"`
 			}
 		} `mapstructure:"KEY"`
+		Graceful struct {
+			MaxSecond time.Duration `mapstructure:"MAX_SECOND"`
+		} `mapstructure:"GRACEFUL"`
 	} `mapstructure:"APPLICATION"`
 
 	DB struct{

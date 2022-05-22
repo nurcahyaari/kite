@@ -18,6 +18,7 @@ import (
 	"github.com/nurcahyaari/kite/src/domain/handlergen"
 	"github.com/nurcahyaari/kite/src/domain/infrastructuregen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen"
+	"github.com/nurcahyaari/kite/src/domain/internalgen/gracefulgen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen/loggergen"
 	"github.com/nurcahyaari/kite/src/domain/internalgen/utilsgen"
 	"github.com/nurcahyaari/kite/src/domain/miscgen"
@@ -93,6 +94,14 @@ var utilGen = wire.NewSet(
 	wire.Bind(
 		new(utilsgen.UtilGen),
 		new(*utilsgen.UtilGenImpl),
+	),
+)
+
+var gracefulGen = wire.NewSet(
+	gracefulgen.NewGracefulGen,
+	wire.Bind(
+		new(gracefulgen.GracefulGen),
+		new(*gracefulgen.GracefulGenImpl),
 	),
 )
 
@@ -236,6 +245,7 @@ func InitCliApp() *cli.CliImpl {
 		infrastructureGen,
 		internalGen,
 		protocolGen,
+		gracefulGen,
 		protocolType,
 		srcGen,
 		handlerGen,

@@ -41,6 +41,7 @@ func (s CliRouterImpl) CreateNewApps(ctx *cli.Context, path string) error {
 			GoModName:    gomodName,
 			ProjectPath:  utils.ConcatDirPath(path, gomodName),
 			ProtocolType: protocolType,
+			Name:         gomodName,
 		},
 	}
 

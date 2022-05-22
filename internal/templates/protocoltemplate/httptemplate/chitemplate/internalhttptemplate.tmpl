@@ -2,10 +2,28 @@ func (p *HttpImpl) setupRouter(app *chi.Mux) {
 	p.HttpRouter.Router(app)
 }
 
+func (h *HttpImpl) cors(r *chi.Mux) {
+	r.Use(cors.AllowAll().Handler)
+}
+
 func (p *HttpImpl) Listen() {
 	app := chi.NewRouter()
 
 	p.setupRouter(app)
 
-	http.ListenAndServe(fmt.Sprintf(":%d", config.Get().Application.Port), app)
+	serverPort := fmt.Sprintf(":%d", config.Get().Application.Port)
+	p.httpServer = &http.Server{
+		Addr:    serverPort,
+		Handler: app,
+	}
+
+	log.Info().Msgf("Server started on Port %s ", serverPort)
+	p.httpServer.ListenAndServe()
+}
+
+func (h *HttpImpl) Shutdown(ctx context.Context) error {
+	if err := h.httpServer.Shutdown(ctx); err != nil {
+		return err
+	}
+	return nil
 }
