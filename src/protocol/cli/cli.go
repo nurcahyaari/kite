@@ -12,7 +12,6 @@ import (
 type CliRouter interface {
 	CreateNewApps(ctx *cli.Context, path string) error
 	CreateNewDomain(ctx *cli.Context, path string) error
-	// TODO: need to implement
 	CreateNewHandler(ctx *cli.Context, path string) error
 	CreateNewModule(ctx *cli.Context, path string) error
 }
