@@ -151,6 +151,39 @@ func (s CliImpl) CreateNewCliApp() {
 				return s.clirouter.CreateNewModule(ctx, path)
 			},
 		},
+		{
+			Name:        "module",
+			Description: "Make a new module",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:  "name",
+					Value: "",
+					Usage: "module name",
+				},
+				&cli.StringFlag{
+					Name:  "path",
+					Value: "",
+					Usage: "Path of a new module",
+				},
+			},
+			Action: func(ctx *cli.Context) error {
+				spinner.Message(" Creating Module ")
+				spinner.StopMessage(" New Module was created ")
+				spinner.Start()
+				return s.clirouter.CreateNewModule(ctx, path)
+			},
+		},
+		{
+			Name:        "version",
+			Description: "get app version",
+			Aliases: []string{
+				"v",
+			},
+			Action: func(ctx *cli.Context) error {
+				fmt.Printf("v%s \n", config.Get().Application.Version)
+				return nil
+			},
+		},
 	}
 
 	err = s.cli.Run(os.Args)
