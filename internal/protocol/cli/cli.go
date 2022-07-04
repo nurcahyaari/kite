@@ -104,7 +104,7 @@ func (s CliImpl) CreateNewCliApp() {
 		},
 		{
 			Name:        "handler",
-			Description: "Make a new handler",
+			Description: "Make a new handler. handler such as http handler, grpc handler, graphql handler",
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:  "name",
@@ -131,29 +131,7 @@ func (s CliImpl) CreateNewCliApp() {
 		},
 		{
 			Name:        "module",
-			Description: "Make a new module",
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:  "name",
-					Value: "",
-					Usage: "module name",
-				},
-				&cli.StringFlag{
-					Name:  "path",
-					Value: "",
-					Usage: "Path of a new module",
-				},
-			},
-			Action: func(ctx *cli.Context) error {
-				spinner.Message(" Creating Module ")
-				spinner.StopMessage(" New Module was created ")
-				spinner.Start()
-				return s.clirouter.CreateNewModule(ctx, path)
-			},
-		},
-		{
-			Name:        "module",
-			Description: "Make a new module",
+			Description: "Make a new module. module is a dependency",
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:  "name",

@@ -33,4 +33,14 @@ func TestGetImportPathBasedOnProjectPath(t *testing.T) {
 		r := utils.GetImportPathBasedOnProjectPath("/Users/nurcahyaari/Documents/projects/tools/testkite/test1/internal/protocols/http/router", "test1")
 		assert.Equal(t, "test1/internal/protocols/http/router", r)
 	})
+
+	t.Run("test2", func(t *testing.T) {
+		r := utils.GetImportPathBasedOnProjectPath("/Users/nurcahyaari/Documents/projects/tools/testkite/test1/test1/internal/protocols/http/router", "test1")
+		assert.Equal(t, "test1/internal/protocols/http/router", r)
+	})
+
+	t.Run("test3", func(t *testing.T) {
+		r := utils.GetImportPathBasedOnProjectPath("/test1/test1/internal/protocols/http/router", "test1")
+		assert.Equal(t, "test1/internal/protocols/http/router", r)
+	})
 }

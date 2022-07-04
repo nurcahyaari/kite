@@ -96,11 +96,16 @@ func (s ModuleGenImpl) BuildModuleTemplate(dto ModuleDto) (string, error) {
 		return "", err
 	}
 
+	funcArgList := ast.FunctionArgList{}
+	if dto.AddFuncArgs != nil {
+		funcArgList = *dto.AddFuncArgs
+	}
+
 	abstractCode := ast.NewAbstractCode(templateCode, parser.ParseComments)
 	abstractCode.AddFunction(ast.FunctionSpecList{
 		&ast.FunctionSpec{
 			Name: fmt.Sprintf("New%s", utils.CapitalizeFirstLetter(dto.ModuleName)),
-			Args: *dto.AddFuncArgs,
+			Args: funcArgList,
 			Returns: &ast.FunctionReturnSpecList{
 				&ast.FunctionReturnSpec{
 					IsPointer: true,

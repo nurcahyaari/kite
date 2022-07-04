@@ -31,6 +31,16 @@ func ConcatDirPath(dir ...string) string {
 	return newPath
 }
 
+func RemoveOnlySlashPath(dirPaths []string) []string {
+	newDirPaths := []string{}
+	for _, p := range dirPaths {
+		if p != "/" {
+			newDirPaths = append(newDirPaths, p)
+		}
+	}
+	return newDirPaths
+}
+
 func AddSlashOnPath(path string) string {
 	pathSplit := strings.Split(path, "")
 	if len(pathSplit) > 0 {
@@ -144,7 +154,11 @@ func GoModInit(projectPath, goModName string) error {
 
 func GetImportPathBasedOnProjectPath(projectPath, gomodName string) string {
 	s := strings.Split(projectPath, gomodName)
-	return ConcatDirPath(gomodName, RemoveSlashFirstAndLast(s[1]))
+	s = RemoveOnlySlashPath(s)
+	if len(s) == 0 {
+		return ""
+	}
+	return ConcatDirPath(gomodName, RemoveSlashFirstAndLast(s[len(s)-1]))
 }
 
 func GetGoFilesInPath(path string) ([]string, error) {
